@@ -85,7 +85,7 @@ class _ComprehensivePageState extends State<ComprehensivePage>
       return Container(
         padding: const EdgeInsets.only(left: 15, top: 20),
         child: Text(
-          AppLocalizations.of(context)!.chatRecently,
+          'AI${AppLocalizations.of(context)!.chatRecently}',
           style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
