@@ -32,16 +32,6 @@ class _AIToolPageState extends State<AIToolPage>
   //跳转到对话详情待更新的model
   ConversationModel? pendingModel;
 
-  get _historyList => Container(
-        padding: const EdgeInsets.only(right: 10),
-        child: InkWell(
-          splashColor: Colors.transparent, // 水波纹颜色透明
-          highlightColor: Colors.transparent, // 高亮颜色透明
-          onTap: () {},
-          child: const Icon(Icons.history, size: 30),
-        ),
-      );
-
   @override
   void initState() {
     super.initState();
@@ -70,10 +60,7 @@ class _AIToolPageState extends State<AIToolPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.aITool),
-        centerTitle: true,
-        actions: [_historyList],
-      ),
+          title: Text(AppLocalizations.of(context)!.aITool), centerTitle: true),
       body: Row(children: [
         Expanded(
           flex: 1,
