@@ -26,9 +26,12 @@ abstract class IConversationList {
 
 class ConversationListDao implements IConversationList, ITable {
   final HiDBManager storage;
+  @override
+  //'随便聊'列表名:tb_conversation_list, 'AI工具'列表名:tb_AITool_conversation_list
+  String tableName = '';
 
   ///构造方法中，进行数据表的检查和创建
-  ConversationListDao(this.storage) {
+  ConversationListDao(this.storage, this.tableName) {
     // id	integer	主键、自增
     // cid	integer	会话id
     // title	text	会话标题
@@ -46,9 +49,6 @@ class ConversationListDao implements IConversationList, ITable {
     storage.db.execute(
         'create unique index if not exists ${tableName}_cid_idx on $tableName (cid);');
   }
-
-  @override
-  String tableName = 'tb_conversation_list';
 
   @override
   void deleteConversation(ConversationModel model) {

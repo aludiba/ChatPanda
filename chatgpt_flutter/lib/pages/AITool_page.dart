@@ -1,7 +1,11 @@
+import 'package:chatgpt_flutter/db/conversation_dao.dart';
+import 'package:chatgpt_flutter/db/hi_db_manager.dart';
+import 'package:chatgpt_flutter/db/message_dao.dart';
 import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
 import 'package:chatgpt_flutter/util/file_utils.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -28,13 +32,22 @@ class _AIToolPageState extends State<AIToolPage>
   late List<AIToolSubModel> _selectedSubData;
   // 右列数据量
   late int _rightDataCount;
-
+  // 对话列表操作Dao
+  late ConversationListDao conversationListDao;
   //跳转到对话详情待更新的model
   ConversationModel? pendingModel;
 
   @override
   void initState() {
     super.initState();
+    _doInit();
+  }
+
+  void _doInit() async {
+    var storage =
+        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    conversationListDao =
+        ConversationListDao(storage, HiConst.aIToolChatListName);
     loadJsonData();
   }
 
@@ -116,7 +129,19 @@ class _AIToolPageState extends State<AIToolPage>
   }
 
   // AI工具历史列表数据更新
-  _doUpdate(int cid) async {}
+  _doUpdate(int cid) async {
+    //fix 新建会话，没有聊天消息也会保存的问题
+    if (pendingModel == null || pendingModel?.title == null) {
+      return;
+    }
+    var messageDao = MessageDao(conversationListDao.storage, cid: cid);
+    var count = await messageDao.getMessageCount();
+    //触发刷新
+    setState(() {
+      pendingModel?.messageCount = count;
+    });
+    conversationListDao.saveConversation(pendingModel!);
+  }
 
   // 跳转到相应的AI工具对话框
   void _jumpToConversation(

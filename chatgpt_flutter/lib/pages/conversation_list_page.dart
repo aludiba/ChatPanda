@@ -6,6 +6,7 @@ import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/model/favorite_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:chatgpt_flutter/widget/conversation_widget.dart';
 import 'package:chatgpt_flutter/widget/noData_widget.dart';
@@ -133,7 +134,8 @@ class _ConversationListPageState extends State<ConversationListPage>
   void _doInit() async {
     var storage =
         await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
-    conversationListDao = ConversationListDao(storage);
+    conversationListDao =
+        ConversationListDao(storage, HiConst.randomChatListName);
     favoriteDao = FavoriteDao(storage);
     _loadStickData();
     _loadData();
