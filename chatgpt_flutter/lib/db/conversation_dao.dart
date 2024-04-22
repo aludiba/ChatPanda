@@ -73,7 +73,7 @@ class ConversationListDao implements IConversationList, ITable {
     // 将查询结果转成Dart Model以方便使用
     var list = results.map((item) => ConversationModel.fromJson(item)).toList();
     debugPrint('count:${list.length}');
-    debugPrint(jsonEncode(list));
+    debugPrint('ConversationList:${jsonEncode(list)}');
     return list;
   }
 
@@ -86,6 +86,7 @@ class ConversationListDao implements IConversationList, ITable {
 
     ///将查询结果转成Dart Model以方便使用
     var list = results.map((item) => ConversationModel.fromJson(item)).toList();
+    debugPrint('StickConversationList:${jsonEncode(list)}');
     return list;
   }
 

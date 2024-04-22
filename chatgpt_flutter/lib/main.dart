@@ -2,6 +2,7 @@ import 'package:chatgpt_flutter/dao/hi_api_cache.dart';
 import 'package:chatgpt_flutter/pages/bottom_navigator.dart';
 import 'package:chatgpt_flutter/provider/hi_provider.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/custom_Notification.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -42,21 +43,24 @@ class MyApp extends StatelessWidget {
           providers: mainProviders,
           child: Consumer<ThemeProvider>(builder: (BuildContext context,
               ThemeProvider themeProvider, Widget? child) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: widget,
-              theme: themeProvider.getTheme(),
-              title: 'ChatGPT',
-              localizationsDelegates: const [
-                AppLocalizations.delegate, // Add this line
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate
-              ],
-              supportedLocales: const [
-                Locale('zh'), // 简体中文
-                Locale('en'), // English
-              ],
+            return ChangeNotifierProvider(
+              create: (context) => AIToolSharedData(),
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                home: widget,
+                theme: themeProvider.getTheme(),
+                title: 'ChatGPT',
+                localizationsDelegates: const [
+                  AppLocalizations.delegate, // Add this line
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate
+                ],
+                supportedLocales: const [
+                  Locale('zh'), // 简体中文
+                  Locale('en'), // English
+                ],
+              ),
             );
           }),
         );

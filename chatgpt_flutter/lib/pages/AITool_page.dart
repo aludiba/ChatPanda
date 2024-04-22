@@ -1,14 +1,18 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:chatgpt_flutter/db/conversation_dao.dart';
 import 'package:chatgpt_flutter/db/hi_db_manager.dart';
 import 'package:chatgpt_flutter/db/message_dao.dart';
 import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
+import 'package:chatgpt_flutter/util/custom_Notification.dart';
 import 'package:chatgpt_flutter/util/file_utils.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class AIToolPage extends StatefulWidget {
   const AIToolPage({super.key});
@@ -23,15 +27,15 @@ class _AIToolPageState extends State<AIToolPage>
   bool get wantKeepAlive => true;
 
   // 数组
-  late List<AIToolModel> _data;
+  List<AIToolModel> _data = [];
   // 左列数据量
-  late int _leftDataCount;
+  int _leftDataCount = 0;
   // 左列选中ID
-  late String _selectedId;
+  String _selectedId = '';
   // 当前选中的子数组
-  late List<AIToolSubModel> _selectedSubData;
+  List<AIToolSubModel> _selectedSubData = [];
   // 右列数据量
-  late int _rightDataCount;
+  int _rightDataCount = 0;
   // 对话列表操作Dao
   late ConversationListDao conversationListDao;
   //跳转到对话详情待更新的model
@@ -141,6 +145,9 @@ class _AIToolPageState extends State<AIToolPage>
       pendingModel?.messageCount = count;
     });
     conversationListDao.saveConversation(pendingModel!);
+    // 通过Provider获取AIToolSharedData的实例，并更新数据
+    Provider.of<AIToolSharedData>(context, listen: false)
+        .updateData(true, pendingModel);
   }
 
   // 跳转到相应的AI工具对话框

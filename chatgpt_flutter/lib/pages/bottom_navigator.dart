@@ -27,6 +27,9 @@ class _BottomNavigatorState extends State<BottomNavigator> {
     //更新导航器的context，供退出登录时使用
     NavigatorUtil.updateContext(context);
     var themeProvider = context.watch<ThemeProvider>();
+    themeProvider.screenSize = MediaQuery.of(context).size;
+    themeProvider.topPadding = MediaQuery.of(context).padding.top;
+    themeProvider.bottomPadding = MediaQuery.of(context).padding.bottom;
     _activeColor = themeProvider.themeColor;
     return Scaffold(
       body: PageView(

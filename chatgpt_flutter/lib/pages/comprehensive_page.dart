@@ -2,10 +2,12 @@ import 'package:chatgpt_flutter/model/comprehensive_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_list_page.dart';
 import 'package:chatgpt_flutter/pages/imageGeneration_page.dart';
 import 'package:chatgpt_flutter/pages/voiceChat_page.dart';
+import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/widget/comprehensive_widget.dart';
 import 'package:chatgpt_flutter/widget/conversation_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class ComprehensivePage extends StatefulWidget {
   const ComprehensivePage({super.key});
@@ -14,12 +16,21 @@ class ComprehensivePage extends StatefulWidget {
   State<ComprehensivePage> createState() => _ComprehensivePageState();
 }
 
-class _ComprehensivePageState extends State<ComprehensivePage> {
+class _ComprehensivePageState extends State<ComprehensivePage>
+    with AutomaticKeepAliveClientMixin {
   static const titleStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black);
   //综合性服务列表
   late List<ComprehensiveModel> comprehensiveList;
   get _dataCount => comprehensiveList.length + 1 + 1;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void setState(VoidCallback fn) {
@@ -53,14 +64,15 @@ class _ComprehensivePageState extends State<ComprehensivePage> {
               title: AppLocalizations.of(context)!.imageGeneration))
     ];
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.chatPanda),
-          centerTitle: true,
-        ),
-        body: ListView.builder(
-            itemCount: _dataCount,
-            itemBuilder: (BuildContext context, int index) =>
-                _comprehensiveWidget(index, context)));
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.chatPanda),
+        centerTitle: true,
+      ),
+      body: ListView.builder(
+          itemCount: _dataCount,
+          itemBuilder: (BuildContext context, int index) =>
+              _comprehensiveWidget(index, context)),
+    );
   }
 
   _comprehensiveWidget(int index, BuildContext context) {
@@ -93,14 +105,14 @@ class _ComprehensivePageState extends State<ComprehensivePage> {
         ),
       );
     } else {
-      // 获取屏幕尺寸
-      final Size screenSize = MediaQuery.of(context).size;
-      // 获取顶部和底部导航栏高度
-      final double topPadding = MediaQuery.of(context).padding.top;
-      final double bottomPadding = MediaQuery.of(context).padding.bottom;
+      var themeProvider = context.watch<ThemeProvider>();
       // 计算屏幕高度减去导航栏高度
-      final double screenHeightMinusNavBars =
-          screenSize.height - topPadding - bottomPadding - 204;
+      double screenHeightMinusNavBars = themeProvider.screenSize!.height -
+          themeProvider.topPadding! -
+          themeProvider.bottomPadding! -
+          kToolbarHeight -
+          kBottomNavigationBarHeight -
+          204;
       return SizedBox(
         height: screenHeightMinusNavBars,
         child: const ConversationListWidget(isComprehensive: true),

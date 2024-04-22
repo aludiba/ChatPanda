@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:chatgpt_flutter/db/conversation_dao.dart';
 import 'package:chatgpt_flutter/db/favorite_dao.dart';
+import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/model/favorite_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/custom_Notification.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:chatgpt_flutter/widget/conversation_widget.dart';
@@ -13,6 +15,7 @@ import 'package:chatgpt_flutter/widget/noData_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 import '../db/hi_db_manager.dart';
@@ -63,9 +66,13 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     super.setState(fn);
   }
 
+  // build
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (widget.isComprehensive == true) {
+      _aIToolListener(context);
+    }
     return widget.isComprehensive == true
         ? _buildComprehensiveListWidget()
         : _buildConversationListWidget();
@@ -134,7 +141,6 @@ class ConversationListWidgetState extends State<ConversationListWidget>
             ConversationWidget(model: model, onPressed: _jumpToConversation));
   }
 
-  _conversationListWidget(int pos) {}
   void _doInit() async {
     var storage =
         await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
@@ -146,6 +152,20 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     favoriteDao = FavoriteDao(storage);
     _loadStickData();
     _loadData();
+  }
+
+  _aIToolListener(BuildContext context) {
+    bool isUpdate = context.watch<AIToolSharedData>().isUpdate;
+    AILogger.log('aIToolListener_isUpdate:$isUpdate');
+    if (isUpdate && (context.watch<AIToolSharedData>().updateModel != null)) {
+      AILogger.log('更新AI最近聊天列表');
+      ConversationModel updateModel =
+          context.watch<AIToolSharedData>().updateModel!;
+      pendingModel = updateModel;
+      _doUpdate(updateModel.cid);
+      // 更新完之后状态设为false
+      Provider.of<AIToolSharedData>(context, listen: false).isUpdate = false;
+    }
   }
 
   int pageIndex = 1;
@@ -184,6 +204,8 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     NavigatorUtil.push(
         context,
         ConversationPage(
+          isAITool: widget.isComprehensive,
+          aiToolModel: AIToolSubModel(description: 'description0001'),
           conversationModel: model,
           conversationUpdate: (model) => _doUpdate(model.cid),
         )).then((value) => {
@@ -207,7 +229,7 @@ class ConversationListWidgetState extends State<ConversationListWidget>
       }
     } else {
       if (!conversationList.contains(pendingModel)) {
-        conversationList.add(pendingModel!);
+        conversationList.insert(0, pendingModel!);
       }
     }
     //触发刷新

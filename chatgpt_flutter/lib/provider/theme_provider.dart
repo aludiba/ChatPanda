@@ -25,6 +25,12 @@ class ThemeProvider extends ChangeNotifier {
     'grey'
   ];
   MaterialColor? _themeColor;
+  // 屏幕尺寸
+  Size? screenSize;
+  // 顶部状态栏高度
+  double? topPadding;
+  // 底部状态栏高度
+  double? bottomPadding;
 
   get themeColor => _themeColor;
 
