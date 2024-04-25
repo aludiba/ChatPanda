@@ -22,6 +22,9 @@ abstract class IConversationList {
 
   // 查询置顶的会话
   Future<List<ConversationModel>> getStickConversationList();
+
+  // 获取对话列表数量
+  Future<int> getConversationListCount();
 }
 
 class ConversationListDao implements IConversationList, ITable {
@@ -72,8 +75,6 @@ class ConversationListDao implements IConversationList, ITable {
         'order by updateAt desc limit $pageSize offset $offset');
     // 将查询结果转成Dart Model以方便使用
     var list = results.map((item) => ConversationModel.fromJson(item)).toList();
-    debugPrint('count:${list.length}');
-    debugPrint('ConversationList:${jsonEncode(list)}');
     return list;
   }
 
@@ -88,6 +89,13 @@ class ConversationListDao implements IConversationList, ITable {
     var list = results.map((item) => ConversationModel.fromJson(item)).toList();
     debugPrint('StickConversationList:${jsonEncode(list)}');
     return list;
+  }
+
+  @override
+  Future<int> getConversationListCount() async {
+    var result =
+        await storage.db.query(tableName, columns: ['COUNT(*) as cnt']);
+    return result.first['cnt'] as int;
   }
 
   @override

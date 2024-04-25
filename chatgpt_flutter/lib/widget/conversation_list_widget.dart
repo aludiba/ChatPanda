@@ -8,6 +8,7 @@ import 'package:chatgpt_flutter/model/favorite_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/custom_Notification.dart';
+import 'package:chatgpt_flutter/util/file_utils.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:chatgpt_flutter/widget/conversation_widget.dart';
@@ -15,7 +16,6 @@ import 'package:chatgpt_flutter/widget/noData_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 import '../db/hi_db_manager.dart';
@@ -156,9 +156,7 @@ class ConversationListWidgetState extends State<ConversationListWidget>
 
   _aIToolListener(BuildContext context) {
     bool isUpdate = context.watch<AIToolSharedData>().isUpdate;
-    AILogger.log('aIToolListener_isUpdate:$isUpdate');
     if (isUpdate && (context.watch<AIToolSharedData>().updateModel != null)) {
-      AILogger.log('更新AI最近聊天列表');
       ConversationModel updateModel =
           context.watch<AIToolSharedData>().updateModel!;
       pendingModel = updateModel;
@@ -199,13 +197,35 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     return list;
   }
 
-  void _jumpToConversation(ConversationModel model) {
+  // 获取AI工具的子model
+  Future<AIToolSubModel?> getAIToolModel(ConversationModel model) async {
+    dynamic jsonData = await JsonStorage.loadDataFromFile('AIToolData.json');
+    List<dynamic> map = jsonData.toList();
+    List<AIToolModel> data = map.map((e) => AIToolModel.fromJson(e)).toList();
+    AIToolSubModel? tempModel;
+    for (var element in data) {
+      for (var value in element.children!) {
+        if (value.conversation?.cid == model.cid) {
+          tempModel = value;
+          break;
+        }
+      }
+    }
+    return tempModel;
+  }
+
+  void _jumpToConversation(ConversationModel model) async {
     pendingModel = model;
+    AIToolSubModel? aIToolSubModel;
+    if (widget.isComprehensive == true) {
+      aIToolSubModel = await getAIToolModel(pendingModel!);
+    }
+    // ignore: use_build_context_synchronously
     NavigatorUtil.push(
         context,
         ConversationPage(
           isAITool: widget.isComprehensive,
-          aiToolModel: AIToolSubModel(description: 'description0001'),
+          aiToolModel: aIToolSubModel,
           conversationModel: model,
           conversationUpdate: (model) => _doUpdate(model.cid),
         )).then((value) => {
@@ -224,10 +244,22 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     var count = await messageDao.getMessageCount();
     //fix 置顶消息从对话框返回重复添加的问题
     if (pendingModel!.stickTime > 0) {
+      for (var element in stickConversationList) {
+        if (element.cid == pendingModel!.cid) {
+          int index = stickConversationList.indexOf(element);
+          stickConversationList[index] = pendingModel!; //
+        }
+      }
       if (!stickConversationList.contains(pendingModel)) {
         stickConversationList.add(pendingModel!);
       }
     } else {
+      for (var element in conversationList) {
+        if (element.cid == pendingModel!.cid) {
+          int index = conversationList.indexOf(element);
+          conversationList[index] = pendingModel!; //
+        }
+      }
       if (!conversationList.contains(pendingModel)) {
         conversationList.insert(0, pendingModel!);
       }
@@ -264,6 +296,10 @@ class ConversationListWidgetState extends State<ConversationListWidget>
     conversationList.remove(model);
     //fix 置顶消息无法删除问题
     stickConversationList.remove(model);
+    // 通过Provider获取AIToolSharedData的实例，并删除AI工具数据
+    // ignore: use_build_context_synchronously
+    Provider.of<AIToolSharedData>(context, listen: false)
+        .deleteAIToolData(true, model);
     setState(() {});
   }
 

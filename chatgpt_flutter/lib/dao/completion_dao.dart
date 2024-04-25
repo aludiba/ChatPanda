@@ -1,5 +1,6 @@
 import 'package:chat_message/models/message_model.dart';
 import 'package:chatgpt_flutter/util/conversation_context_helper.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:openai_flutter/core/ai_completions.dart';
 import 'package:openai_flutter/core/ai_wenxincompletions.dart';
@@ -51,7 +52,7 @@ class CompletionDao {
         clientId: 'dGS8uD4kJmTS0wE40Wfdo6Wm',
         clientSecret: 'TqINjvUSleNBmIxqWUrGlXf7sEAg8RoN');
     var accessToken = response.accessToken ?? '';
-    PreferencesHelper.saveData('access_token', accessToken);
+    PreferencesHelper.saveData(HiConst.accessToken, accessToken);
     return accessToken;
   }
 

@@ -11,6 +11,8 @@ import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/model/favorite_model.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/aimapping_utils.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/hi_dialog.dart';
 import 'package:chatgpt_flutter/util/hi_selection_area.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
@@ -21,7 +23,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:openai_flutter/http/ai_config.dart';
-import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 typedef OnConversationUpdate = void Function(
@@ -80,7 +81,8 @@ class _ConversationPageState extends State<ConversationPage> {
             borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
           child: Text(
-            widget.aiToolModel?.description ?? '',
+            AIMappingToLocalize.getAITitleDesc(
+                context, widget.aiToolModel?.description),
             style: const TextStyle(
                 fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black),
           )));
@@ -154,8 +156,11 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   getTitle() {
-    var title = widget.aiToolModel?.descTitle ??
-        AppLocalizations.of(context)!.conversationWithChatPanda;
+    var title = AIMappingToLocalize.getAITitleDesc(
+        context, widget.aiToolModel?.descTitle);
+    if (title == '') {
+      title = AppLocalizations.of(context)!.conversationWithChatPanda;
+    }
     _title = _sendBtnEnable
         ? title
         : AppLocalizations.of(context)!.theOtherPartyIsTyping;
@@ -175,7 +180,9 @@ class _ConversationPageState extends State<ConversationPage> {
     widget.conversationModel.hadChanged = true;
     if (widget.isAITool == true &&
         completionDao.conversationContextHelper.conversationList.isEmpty) {
-      inputMessage = '${widget.aiToolModel!.description!}\n$inputMessage';
+      String str = AIMappingToLocalize.getAITitleDesc(
+          context, widget.aiToolModel?.description);
+      inputMessage = '$str\n$inputMessage';
     }
     _addMessage(
         _genMessageModel(ownerType: OwnerType.sender, message: inputMessage));
@@ -201,7 +208,9 @@ class _ConversationPageState extends State<ConversationPage> {
     widget.conversationModel.hadChanged = true;
     if (widget.isAITool == true &&
         completionDao.conversationContextHelper.conversationList.isEmpty) {
-      inputMessage = '${widget.aiToolModel!.description!}\n$inputMessage';
+      String str = AIMappingToLocalize.getAITitleDesc(
+          context, widget.aiToolModel?.description);
+      inputMessage = '$str\n$inputMessage';
     }
     _addMessage(
         _genMessageModel(ownerType: OwnerType.sender, message: inputMessage));
@@ -215,7 +224,7 @@ class _ConversationPageState extends State<ConversationPage> {
           prompt: inputMessage) as Map<String, dynamic>;
       if (map['errorCode'] != null) {
         if (map['errorCode'] == 110) {
-          PreferencesHelper.saveData('access_token', '');
+          PreferencesHelper.saveData(HiConst.accessToken, '');
           _initWenXinConfig();
           _onWenXinSend(inputMessage);
           return;
@@ -272,11 +281,9 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _initWenXinConfig() async {
-    accessToken = await PreferencesHelper.loadData('access_token');
-    AILogger.log('PreferencesHelper_accessToken:$accessToken');
+    accessToken = (await PreferencesHelper.loadData(HiConst.accessToken))!;
     if (accessToken == '') {
       accessToken = await CompletionDao.getWenXinToken();
-      AILogger.log('getWenXinToken_accessToken:$accessToken');
     }
   }
 
@@ -468,9 +475,9 @@ class _ConversationPageState extends State<ConversationPage> {
   _buildContentText(
       MessageModel message, TextAlign align, BuildContext context) {
     String sendMessage = message.content;
-    AILogger.log('sendMessage:$sendMessage');
     if (widget.isAITool == true) {
-      String description = widget.aiToolModel?.description ?? '';
+      String description = AIMappingToLocalize.getAITitleDesc(
+          context, widget.aiToolModel?.description);
       if (sendMessage.contains(description)) {
         sendMessage = sendMessage.replaceAll('$description\n', '');
       }

@@ -1,6 +1,7 @@
 import 'package:chat_message/models/message_model.dart';
 import 'package:chatgpt_flutter/dao/completion_dao.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +93,7 @@ class _VoiceChatPageState extends State<VoiceChatPage>
   }
 
   _initWenXinConfig() async {
-    accessToken = await PreferencesHelper.loadData('access_token');
+    accessToken = (await PreferencesHelper.loadData(HiConst.accessToken))!;
     AILogger.log('PreferencesHelper_accessToken:$accessToken');
     if (accessToken == '') {
       accessToken = await CompletionDao.getWenXinToken();
@@ -171,7 +172,6 @@ class _VoiceChatPageState extends State<VoiceChatPage>
       _speech.listen(
         onResult: (val) => setState(() {
           speakResult = val.recognizedWords;
-          AILogger.log('speakResult:$speakResult');
         }),
       );
     }
@@ -200,7 +200,6 @@ class _VoiceChatPageState extends State<VoiceChatPage>
     try {
       response = await completionDao.createCompletions(prompt: inputMessage);
       response = response?.replaceFirst("\n\n", "");
-      debugPrint(response);
     } catch (e) {
       response = 'no response';
       debugPrint(e.toString());
@@ -223,7 +222,7 @@ class _VoiceChatPageState extends State<VoiceChatPage>
           prompt: inputMessage) as Map<String, dynamic>;
       if (map['errorCode'] != null) {
         if (map['errorCode'] == 110) {
-          PreferencesHelper.saveData('access_token', '');
+          PreferencesHelper.saveData(HiConst.accessToken, '');
           _initWenXinConfig();
           _sendForWenXin(inputMessage);
           return;

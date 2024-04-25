@@ -6,12 +6,14 @@ import 'package:chatgpt_flutter/db/message_dao.dart';
 import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
+import 'package:chatgpt_flutter/util/aimapping_utils.dart';
 import 'package:chatgpt_flutter/util/custom_Notification.dart';
 import 'package:chatgpt_flutter/util/file_utils.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 class AIToolPage extends StatefulWidget {
@@ -57,8 +59,14 @@ class _AIToolPageState extends State<AIToolPage>
 
   // 加载json数据
   loadJsonData() async {
-    List<dynamic> map =
-        await JsonStorage.loadJsonData('assets/json/AIToolData.json');
+    List<dynamic> map;
+    bool isExists = await JsonStorage.fileIsExists('AIToolData.json');
+    if (isExists == true) {
+      dynamic jsonData = await JsonStorage.loadDataFromFile('AIToolData.json');
+      map = jsonData.toList();
+    } else {
+      map = await JsonStorage.loadJsonData('assets/json/AIToolData.json');
+    }
     _data = map.map((e) => AIToolModel.fromJson(e)).toList();
     _leftDataCount = _data.length;
     _selectedId = _data[0].id ?? '';
@@ -69,12 +77,12 @@ class _AIToolPageState extends State<AIToolPage>
 
   // 将数据保存到json文件
   saveDataToJson() async {
-    List<dynamic> list = _data.map((e) => e.toJson).toList();
-    await JsonStorage.saveDataToJson(list, 'assets/json/AIToolData.json');
+    await JsonStorage.saveDataToFile(_data, 'AIToolData.json');
   }
 
   @override
   Widget build(BuildContext context) {
+    _conversationListener(context);
     return Scaffold(
       appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.aITool), centerTitle: true),
@@ -119,7 +127,7 @@ class _AIToolPageState extends State<AIToolPage>
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Text(
-            model.title ?? '',
+            AIMappingToLocalize.getAITitleDesc(context, model.title),
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 20,
@@ -168,11 +176,47 @@ class _AIToolPageState extends State<AIToolPage>
         });
   }
 
+  // 监听对话是否有删除操作
+  _conversationListener(BuildContext context) async {
+    AIToolSharedData toolData = context.watch<AIToolSharedData>();
+    if (toolData.isDelete && toolData.deleteAIModel != null) {
+      ConversationModel updateModel = toolData.deleteAIModel!;
+      // 做你需要的任何状态更新
+      _deleteConversationData(updateModel);
+      toolData.isDelete = false;
+      await saveDataToJson();
+      setState(() {});
+      _printEachItem();
+    }
+  }
+
+  // 删除对话数据模型
+  void _deleteConversationData(ConversationModel updateModel) {
+    for (var element in _data) {
+      for (var value in element.children!) {
+        if (value.conversation?.cid == updateModel.cid) {
+          value.conversation?.cid = 0;
+          value.conversation = null;
+        }
+      }
+    }
+  }
+
+  // 打印出来对话数据模型
+  void _printEachItem() {
+    for (var element in _data) {
+      for (var value in element.children!) {
+        AILogger.log(
+            'descTitle:${value.descTitle}, cid:${value.conversation?.cid}');
+      }
+    }
+  }
+
   //右列cell
   _aiRightWidget(AIToolSubModel model) {
     return GestureDetector(
         onTap: () {
-          if (model.conversation != null) {
+          if (model.conversation != null && model.conversation?.cid != 0) {
             _jumpToConversation(model.conversation!, model);
           } else {
             int cid = DateTime.now().millisecondsSinceEpoch;
@@ -194,14 +238,16 @@ class _AIToolPageState extends State<AIToolPage>
                 ),
                 child: ListTile(
                     title: Text(
-                      model.descTitle ?? '',
+                      AIMappingToLocalize.getAITitleDesc(
+                          context, model.descTitle),
                       style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
                           color: Colors.blue),
                     ),
                     subtitle: Text(
-                      model.description ?? '',
+                      AIMappingToLocalize.getAITitleDesc(
+                          context, model.description),
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,

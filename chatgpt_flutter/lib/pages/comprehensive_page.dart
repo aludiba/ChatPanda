@@ -1,8 +1,11 @@
+import 'package:chatgpt_flutter/db/conversation_dao.dart';
+import 'package:chatgpt_flutter/db/hi_db_manager.dart';
 import 'package:chatgpt_flutter/model/comprehensive_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_list_page.dart';
 import 'package:chatgpt_flutter/pages/imageGeneration_page.dart';
 import 'package:chatgpt_flutter/pages/voiceChat_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/widget/comprehensive_widget.dart';
 import 'package:chatgpt_flutter/widget/conversation_list_widget.dart';
 import 'package:flutter/material.dart';
@@ -16,20 +19,22 @@ class ComprehensivePage extends StatefulWidget {
   State<ComprehensivePage> createState() => _ComprehensivePageState();
 }
 
-class _ComprehensivePageState extends State<ComprehensivePage>
-    with AutomaticKeepAliveClientMixin {
+class _ComprehensivePageState extends State<ComprehensivePage> {
+  // 对话列表操作Dao
+  late ConversationListDao conversationListDao;
   static const titleStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black);
   //综合性服务列表
   late List<ComprehensiveModel> comprehensiveList;
-  get _dataCount => comprehensiveList.length + 1 + 1;
 
-  @override
-  bool get wantKeepAlive => true;
+  int conversationListCount = 0;
 
-  @override
-  void initState() {
-    super.initState();
+  get _dataCount {
+    if (conversationListCount <= 0) {
+      return comprehensiveList.length;
+    } else {
+      return comprehensiveList.length + 1 + 1;
+    }
   }
 
   @override
@@ -39,6 +44,21 @@ class _ComprehensivePageState extends State<ComprehensivePage>
       return;
     }
     super.setState(fn);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _doInit() async {
+    var storage =
+        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    conversationListDao =
+        ConversationListDao(storage, HiConst.aIToolChatListName);
+    conversationListCount =
+        await conversationListDao.getConversationListCount();
+    setState(() {});
   }
 
   @override
@@ -63,6 +83,7 @@ class _ComprehensivePageState extends State<ComprehensivePage>
           jumpToPage: ImageGenerationPage(
               title: AppLocalizations.of(context)!.imageGeneration))
     ];
+    _doInit();
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.chatPanda),

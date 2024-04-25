@@ -59,6 +59,7 @@ dependencies:
   speech_to_text: ^6.5.1
   sqflite: ^2.3.2
   sqflite_common_ffi: ^2.3.2+1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
