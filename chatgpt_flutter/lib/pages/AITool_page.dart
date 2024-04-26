@@ -6,6 +6,7 @@ import 'package:chatgpt_flutter/db/message_dao.dart';
 import 'package:chatgpt_flutter/model/aiTool_model.dart';
 import 'package:chatgpt_flutter/model/conversation_model.dart';
 import 'package:chatgpt_flutter/pages/conversation_page.dart';
+import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/aimapping_utils.dart';
 import 'package:chatgpt_flutter/util/custom_Notification.dart';
 import 'package:chatgpt_flutter/util/file_utils.dart';
@@ -28,6 +29,7 @@ class _AIToolPageState extends State<AIToolPage>
   @override
   bool get wantKeepAlive => true;
 
+  get _themeColor => context.watch<ThemeProvider>().themeColor;
   // 数组
   List<AIToolModel> _data = [];
   // 左列数据量
@@ -123,7 +125,7 @@ class _AIToolPageState extends State<AIToolPage>
       child: ListTile(
         title: Container(
           decoration: BoxDecoration(
-            color: _selectedId == model.id ? Colors.blue[600] : null,
+            color: _selectedId == model.id ? _themeColor : null,
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Text(
@@ -240,10 +242,10 @@ class _AIToolPageState extends State<AIToolPage>
                     title: Text(
                       AIMappingToLocalize.getAITitleDesc(
                           context, model.descTitle),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
-                          color: Colors.blue),
+                          color: _themeColor),
                     ),
                     subtitle: Text(
                       AIMappingToLocalize.getAITitleDesc(

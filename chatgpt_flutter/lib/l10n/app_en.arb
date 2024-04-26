@@ -166,5 +166,15 @@
   "petBehaviorist": "Pet Behaviorist",
   "petBehavioristD": "I want you to be a pet behaviorist.",
   "sportsCommentary": "Sports Commentary",
-  "sportsCommentaryD": "I want you to be a sports commentator."
+  "sportsCommentaryD": "I want you to be a sports commentator.",
+  "inputHint": "Enter your text",
+  "automaticDetection": "Automatic Detection",
+  "english": "English",
+  "simplifiedChinese": "Simplified Chinese",
+  "chineseTraditional": "Chinese Traditional",
+  "japanese": "Japanese",
+  "korean": "Korean",
+  "spanishLanguage": "Spanish Language",
+  "portuguese": "Portuguese",
+  "french": "French"
 }

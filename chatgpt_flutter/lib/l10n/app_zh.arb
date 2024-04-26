@@ -167,5 +167,15 @@
   "petBehaviorist": "宠物行为学家",
   "petBehavioristD": "我希望你能作为一个宠物行为学家。",
   "sportsCommentary": "体育解说",
-  "sportsCommentaryD": "我想让你充当体育评论员。"
+  "sportsCommentaryD": "我想让你充当体育评论员。",
+  "inputHint": "输入文本",
+  "automaticDetection": "自动检测",
+  "english": "英文",
+  "simplifiedChinese": "简体中文",
+  "chineseTraditional": "繁体中文",
+  "japanese": "日语",
+  "korean": "韩语",
+  "spanishLanguage": "西班牙语",
+  "portuguese": "葡牙语",
+  "french": "法语"
 }
