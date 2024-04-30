@@ -177,5 +177,7 @@
   "korean": "韩语",
   "spanishLanguage": "西班牙语",
   "portuguese": "葡牙语",
-  "french": "法语"
+  "french": "法语",
+  "translateForBtn": "翻译",
+  "waitTranslation": "翻译中......"
 }

@@ -168,13 +168,15 @@
   "sportsCommentary": "Sports Commentary",
   "sportsCommentaryD": "I want you to be a sports commentator.",
   "inputHint": "Enter your text",
-  "automaticDetection": "Automatic Detection",
+  "automaticDetection": "Automatic",
   "english": "English",
-  "simplifiedChinese": "Simplified Chinese",
-  "chineseTraditional": "Chinese Traditional",
+  "simplifiedChinese": "zh-CN",
+  "chineseTraditional": "zh-TW",
   "japanese": "Japanese",
   "korean": "Korean",
-  "spanishLanguage": "Spanish Language",
+  "spanishLanguage": "Spanish",
   "portuguese": "Portuguese",
-  "french": "French"
+  "french": "French",
+  "translateForBtn": "tr.",
+  "waitTranslation": "Translating......"
 }
