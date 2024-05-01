@@ -1,8 +1,25 @@
 import 'package:openai_flutter/core/interfaces/ai_wenxincreate.dart';
 import 'package:openai_flutter/http/ai_wenxinhttp.dart';
 import 'package:openai_flutter/model/ai_wenxinresponse.dart';
+import 'package:openai_flutter/model/ai_wenxinwstresponse.dart';
 
 class AIWenXinCompletion implements AIWenXinCreateInterface {
+  @override
+  Future<AIWenXinWSTResponse> createWenXinWST(
+      {required String accessToken, required String prompt}) async {
+    //通过断言来检查参数的合法性，是封装SDK常用的工具
+    assert(prompt is String, 'prompt field must be a String');
+    return await AIWenXinHttp.post(
+        url:
+            'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/text2image/sd_xl?access_token=$accessToken',
+        onSuccess: (Map<String, dynamic> response) {
+          return AIWenXinWSTResponse.fromJson(response);
+        },
+        body: {
+          if (prompt != null) 'prompt': prompt,
+        });
+  }
+
   @override
   Future<AIWenXinResponse> createWenXinChat(
       {required String accessToken,

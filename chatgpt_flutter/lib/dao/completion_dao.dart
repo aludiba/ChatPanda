@@ -4,6 +4,7 @@ import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:openai_flutter/core/ai_completions.dart';
 import 'package:openai_flutter/core/ai_wenxincompletions.dart';
+import 'package:openai_flutter/model/ai_wenxinwstresponse.dart';
 import 'package:openai_flutter/utils/ai_logger.dart';
 
 class CompletionDao {
@@ -68,6 +69,25 @@ class CompletionDao {
       content = content.replaceFirst("\n\n", ""); //过滤掉开始的换行
       conversationContextHelper.add(ConversationModel(prompt, content));
       map = {'content': content};
+    } else {
+      var errorCode = response.errorCode;
+      map = {'errorCode': errorCode};
+    }
+    return map;
+  }
+
+  ///和文心一言-文生图进行会话
+  Future<Map<String, dynamic>?> createWenXinWSTCompletions(
+      {required String accessToken, required String prompt}) async {
+    var response = await AIWenXinCompletion()
+        .createWenXinWST(accessToken: accessToken, prompt: prompt);
+    var map = <String, dynamic>{};
+    List<ImageData>? list = response.data;
+    if (list != null) {
+      if (list.isNotEmpty) {
+        ImageData imgData = list[0];
+        map = {'base64': imgData.b64Image};
+      }
     } else {
       var errorCode = response.errorCode;
       map = {'errorCode': errorCode};
