@@ -178,5 +178,7 @@
   "portuguese": "Portuguese",
   "french": "French",
   "translateForBtn": "tr.",
-  "waitTranslation": "Translating......"
+  "waitTranslation": "Translating......",
+  "generating": "generating......",
+  "haveEmptied": "Have Emptied"
 }

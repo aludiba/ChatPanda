@@ -76,18 +76,4 @@ class _ChatListState extends State<ChatList> {
     chatController.dispose();
     super.dispose();
   }
-
-  Widget _buildMessageWidget(
-      {required GlobalKey<State<StatefulWidget>> key,
-      required MessageModel message}) {
-    return Container(
-      margin: const EdgeInsets.all(5),
-      padding: const EdgeInsets.only(top: 15, bottom: 15),
-      decoration: BoxDecoration(
-          color: message.ownerType == OwnerType.receiver
-              ? Colors.amberAccent
-              : Colors.blue),
-      child: Text('${message.ownerName} ${message.content} ${message.avatar}'),
-    );
-  }
 }

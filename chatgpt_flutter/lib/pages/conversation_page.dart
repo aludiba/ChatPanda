@@ -433,7 +433,6 @@ class _ConversationPageState extends State<ConversationPage> {
         ],
       );
     }
-
     return Row(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.start,

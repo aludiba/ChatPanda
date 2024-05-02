@@ -179,5 +179,7 @@
   "portuguese": "葡牙语",
   "french": "法语",
   "translateForBtn": "翻译",
-  "waitTranslation": "翻译中......"
+  "waitTranslation": "翻译中......",
+  "generating": "生成中......",
+  "haveEmptied": "已清空"
 }
