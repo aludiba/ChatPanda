@@ -1,4 +1,5 @@
 import 'package:openai_flutter/model/ai_wenxinresponse.dart';
+import 'package:openai_flutter/model/ai_wenxinwstresponse.dart';
 
 abstract class AIWenXinCreateInterface {
   // 获取文心一言-文生图
