@@ -181,5 +181,11 @@
   "translateForBtn": "翻译",
   "waitTranslation": "翻译中......",
   "generating": "生成中......",
-  "haveEmptied": "已清空"
+  "haveEmptied": "已清空",
+  "share": "分享",
+  "haveSaved": "已保存",
+  "saveFailure": "保存失败",
+  "haveDeleted": "已删除",
+  "shareImageTips": "来自ChatPanda的图片",
+  "shareImageError": "分享图片出错"
 }

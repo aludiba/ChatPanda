@@ -23,6 +23,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:openai_flutter/http/ai_config.dart';
+import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 typedef OnConversationUpdate = void Function(
@@ -223,6 +224,7 @@ class _ConversationPageState extends State<ConversationPage> {
           accessToken: accessToken,
           prompt: inputMessage) as Map<String, dynamic>;
       if (map['errorCode'] != null) {
+        AILogger.log('accessToken过期errorCode:${map['errorCode']}');
         if (map['errorCode'] == 110) {
           PreferencesHelper.saveData(HiConst.accessToken, '');
           _initWenXinConfig();

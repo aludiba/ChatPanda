@@ -1,5 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:bubble/bubble.dart';
 import 'package:chat_message/util/wechat_date_format.dart';
@@ -11,13 +13,20 @@ import 'package:chatgpt_flutter/model/imageGeneration_model.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/hi_dialog.dart';
+import 'package:chatgpt_flutter/util/padding_extension.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:chatgpt_flutter/widget/image_list_widget.dart';
 import 'package:chatgpt_flutter/widget/message_input_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:openai_flutter/utils/ai_logger.dart';
+// ignore: depend_on_referenced_packages
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ImageGenerationPage extends StatefulWidget {
   final String? title;
@@ -29,26 +38,26 @@ class ImageGenerationPage extends StatefulWidget {
 }
 
 class _ImageGenerationPageState extends State<ImageGenerationPage> {
-  // 数据，类型为一个数组
-  late List<ImageGenerationModel> _data;
   // 当前输入的提示词
   String _inputMessage = '';
   bool _sendBtnEnable = true;
-  // 文心一言的accessToken
-  late String accessToken;
-  late ImageDao imageDao;
-  late CompletionDao completionDao;
-  late ImageGenerationController imageGenerationController;
+  // 文心一言的_accessToken
+  late String _accessToken;
+  late ImageDao _imageDao;
+  late CompletionDao _completionDao;
+  late ImageGenerationController _imageGenerationController;
   final ScrollController _scrollController = ScrollController();
   // 标题
   late String _title;
 
   get _themeColor => context.watch<ThemeProvider>().themeColor;
 
+  int get _dataCount => _imageGenerationController.initialImageList.length;
+
   get _imageList => Expanded(
           child: Padding(
         padding: const EdgeInsets.only(left: 10, right: 10),
-        child: ImageList(imageController: imageGenerationController),
+        child: ImageList(imageController: _imageGenerationController),
       ));
 
   get _inputWidget {
@@ -70,13 +79,13 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
           onTap: () {
             setState(() {
               // 删除所有数据
-              imageDao.deleteAllImages();
-              imageGenerationController.initialImageList.clear();
+              _imageDao.deleteAllImages();
+              _imageGenerationController.initialImageList.clear();
             });
             HiDialog.showSnackBar(
                 context, AppLocalizations.of(context)!.haveEmptied);
           },
-          child: const Icon(Icons.cleaning_services, size: 30),
+          child: const Icon(Icons.cleaning_services, size: 25),
         ),
       );
 
@@ -97,22 +106,13 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
   }
 
   void _doInit() async {
-    imageGenerationController = ImageGenerationController(
+    _imageGenerationController = ImageGenerationController(
         initialImageList: [],
         scrollController: _scrollController,
         imageWidgetBuilder: _imageWidget,
         timePellet: 60);
     //下拉触发加载更多
     _scrollController.addListener(() {
-      // 滚动到顶部
-      // if (_scrollController.offset ==
-      //         _scrollController.position.minScrollExtent &&
-      //     !_scrollController.position.outOfRange) {
-      //   setState(() {});
-      // } else {
-      //   setState(() {});
-      // }
-      AILogger.log('scrollController-offset:${_scrollController.offset}');
       // 滚动到底部
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
@@ -121,16 +121,17 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     });
     var dbManager =
         await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
-    imageDao = ImageDao(dbManager);
+    _imageDao = ImageDao(dbManager);
     var list = await _loadMore();
-    imageGenerationController.loadMoreData(list);
-    completionDao = CompletionDao();
+    _imageGenerationController.loadMoreData(list);
+    _completionDao = CompletionDao();
+    setState(() {});
   }
 
   void _initWenXinConfig() async {
-    accessToken = (await PreferencesHelper.loadData(HiConst.accessToken))!;
-    if (accessToken == '') {
-      accessToken = await CompletionDao.getWenXinToken();
+    _accessToken = (await PreferencesHelper.loadData(HiConst.accessToken))!;
+    if (_accessToken == '') {
+      _accessToken = await CompletionDao.getWenXinToken();
     }
   }
 
@@ -159,6 +160,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
       return Column(
         children: [
           Text(imageModel.prompt ?? '', style: TextStyle(color: _themeColor)),
+          5.paddingHeight,
           imageWidget
         ],
       );
@@ -179,6 +181,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildContentImage(image, TextAlign.left, context),
+          _menuItem(image)
         ],
       );
     }
@@ -211,6 +214,136 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     );
   }
 
+  _menuItem(ImageGenerationModel imageModel) {
+    Color color = const Color.fromRGBO(233, 233, 252, 19);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(0.0, 6.0, 0.0, 6.0),
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ..._actionItem(
+              isEnable: true,
+              actionTap: () {
+                //先检查权限,保存图片
+                saveBase64ImageToGallery(imageModel);
+              },
+              icon: Icon(Icons.save_alt, color: color, size: 15),
+              text: AppLocalizations.of(context)!.save),
+          ..._actionItem(
+              isEnable: true,
+              actionTap: () {
+                ///删除
+                setState(() {
+                  _imageDao.deleteImage(imageModel.updateAt);
+                  _imageGenerationController.initialImageList
+                      .remove(imageModel);
+                  HiDialog.showSnackBar(
+                      context, AppLocalizations.of(context)!.haveDeleted);
+                });
+              },
+              icon: Icon(Icons.delete, color: color, size: 15),
+              text: AppLocalizations.of(context)!.delete),
+          ..._actionItem(
+              isEnable: true,
+              actionTap: () {
+                ///分享
+                shareImage(imageModel);
+              },
+              icon: Icon(Icons.share_outlined, color: color, size: 15),
+              text: AppLocalizations.of(context)!.share)
+        ],
+      ),
+    );
+  }
+
+  _actionItem(
+          {GestureTapCallback? actionTap,
+          required bool isEnable,
+          required Icon icon,
+          required String text}) =>
+      [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.cyan,
+            borderRadius: BorderRadius.circular(4.0), // 设置圆角半径
+          ),
+          child: InkWell(
+            onTap: isEnable ? actionTap : null,
+            child: Row(
+              children: [
+                4.paddingWidth,
+                icon,
+                Text(text,
+                    style: const TextStyle(fontSize: 14, color: Colors.white)),
+                4.paddingWidth
+              ],
+            ),
+          ),
+        ),
+        4.paddingWidth
+      ];
+
+  // 分享图片
+  Future<void> shareImage(ImageGenerationModel imageModel) async {
+    String base64Image = imageModel.base64!;
+    String text = imageModel.prompt!;
+    try {
+      // 将 Base64 字符串解码为 Uint8List
+      final Uint8List bytes = base64.decode(base64Image);
+      // 使用image库将Uint8List解码为图片
+      final img.Image? image = img.decodeImage(bytes);
+      if (image == null) {
+        throw 'Unable to decode image';
+      }
+      // 获取临时目录用于存储临时文件
+      final Directory tempDir = await getTemporaryDirectory();
+      final String path = '${tempDir.path}/temp_image.png';
+      // 将解码后的图片保存为文件
+      final File file = File(path)..writeAsBytesSync(img.encodePng(image));
+      await Share.shareXFiles(
+        [path].map((path) => XFile(path)).toList(), // 将路径列表转换为XFile列表
+        text: text, // 可以附加一段文本说明
+        subject: AppLocalizations.of(context)!.shareImageTips, // iOS的邮件分享可设置主题
+      );
+      // 删除临时文件。
+      await file.delete();
+    } catch (e) {
+      HiDialog.showSnackBar(
+          context, AppLocalizations.of(context)!.shareImageError);
+    }
+  }
+
+  // 保存图片到相册
+  Future<void> saveBase64ImageToGallery(ImageGenerationModel imageModel) async {
+    String base64String = imageModel.base64!;
+    String prompt = imageModel.prompt!;
+    try {
+      // Base64字符串解码。
+      Uint8List imageData = base64.decode(base64String);
+      // 获取临时目录。
+      final Directory tempDir = await getTemporaryDirectory();
+      final String fileName =
+          '${prompt}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final File imageFile = File('${tempDir.path}/$fileName');
+      // 文件写入。
+      await imageFile.writeAsBytes(imageData);
+      // 将文件保存到相册。
+      final result = await ImageGallerySaver.saveFile(imageFile.path);
+      if (result != null && result.isNotEmpty) {
+        // 文件保存成功
+        HiDialog.showSnackBar(context, AppLocalizations.of(context)!.haveSaved);
+      } else {
+        // 文件保存失败
+        HiDialog.showSnackBar(
+            context, AppLocalizations.of(context)!.saveFailure);
+      }
+      // 删除临时文件。
+      await imageFile.delete();
+    } on PlatformException catch (e) {
+      HiDialog.showSnackBar(context, AppLocalizations.of(context)!.saveFailure);
+    }
+  }
+
   int pageIndex = 1;
 
   ///从数据库加载历史聊天记录
@@ -220,10 +353,10 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     } else {
       pageIndex = 1;
     }
-    var list = await imageDao.getImages(pageIndex: pageIndex);
+    var list = await _imageDao.getImages(pageIndex: pageIndex);
     if (loadMore) {
       if (list.isNotEmpty) {
-        imageGenerationController.loadMoreData(list);
+        _imageGenerationController.loadMoreData(list);
       } else {
         //如果没有更多的数据，则pageIndex不增加
         pageIndex--;
@@ -242,7 +375,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     getTitle();
     return AppBar(
       title: Text(_title),
-      actions: [_cleanStream],
+      actions: _appActions(),
     );
   }
 
@@ -253,8 +386,8 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     });
     String? response = '';
     try {
-      var map = await completionDao.createWenXinWSTCompletions(
-          accessToken: accessToken,
+      var map = await _completionDao.createWenXinWSTCompletions(
+          accessToken: _accessToken,
           prompt: inputMessage) as Map<String, dynamic>;
       if (map['errorCode'] != null) {
         if (map['errorCode'] == 110) {
@@ -285,7 +418,13 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
   }
 
   void _addImage(ImageGenerationModel model) {
-    imageGenerationController.addImage(model);
-    imageDao.saveImage(model);
+    _imageGenerationController.addImage(model);
+    _imageDao.saveImage(model);
+  }
+
+  // 是否有图片
+  List<Widget>? _appActions() {
+    bool result = _dataCount > 0 ? true : false;
+    return result ? [_cleanStream] : [];
   }
 }

@@ -179,6 +179,12 @@
   "french": "French",
   "translateForBtn": "tr.",
   "waitTranslation": "Translating......",
-  "generating": "generating......",
-  "haveEmptied": "Have Emptied"
+  "generating": "Generating......",
+  "haveEmptied": "Have Emptied",
+  "share": "Share",
+  "haveSaved": "Have been saved",
+  "saveFailure": "Save failure",
+  "haveDeleted": "Have deleted",
+  "shareImageTips": "Images from ChatPanda",
+  "shareImageError": "Error in sharing pictures"
 }

@@ -8,7 +8,7 @@ abstract class IImage {
 
   Future<int> deleteAllImages();
 
-  Future<int> deleteImage(int id);
+  Future<int> deleteImage(int updateAt);
 
   void update(ImageGenerationModel model);
 
@@ -38,13 +38,16 @@ class ImageDao implements IImage, ITable {
   }
 
   @override
-  Future<int> deleteAllImages() {
-    return storage.db.delete(tableName);
+  Future<int> deleteAllImages() async {
+    var result = await storage.db.delete(tableName);
+    return result;
   }
 
   @override
-  Future<int> deleteImage(int id) {
-    return storage.db.delete(tableName, where: 'id=$id');
+  Future<int> deleteImage(int updateAt) async {
+    var result =
+        await storage.db.delete(tableName, where: 'updateAt=$updateAt');
+    return result;
   }
 
   @override

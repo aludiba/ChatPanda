@@ -36,8 +36,14 @@ class _ImageListState extends State<ImageList> {
                   itemCount: snapshot.data?.length ?? 0,
                   itemBuilder: (BuildContext context, int index) {
                     var model = snapshot.data![index];
-                    return Container(
-                        height: 350, child: imageWidgetBuilder!(model));
+                    return ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: 335, // 预设的最小高度
+                        // 如果你想要上限，也可以指定 maxHeight
+                      ),
+                      // 子元素将是imageWidgetBuilder构建的widget
+                      child: imageWidgetBuilder!(model),
+                    );
                   })
               : const Center(
                   child: CircularProgressIndicator(),
