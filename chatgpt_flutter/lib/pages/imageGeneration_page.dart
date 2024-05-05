@@ -170,6 +170,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     }
   }
 
+  // 模态展示图片
   void _showModal(BuildContext context, ImageGenerationModel imageModel,
       Widget imageWidget) {
     showCupertinoModalPopup(
