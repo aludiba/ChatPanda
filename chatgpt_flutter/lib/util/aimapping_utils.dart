@@ -333,6 +333,27 @@ class AIMappingToLocalize {
       case 'sportsCommentaryD':
         str = AppLocalizations.of(context)!.sportsCommentaryD;
         break;
+      case 'music':
+        str = AppLocalizations.of(context)!.music;
+        break;
+      case 'composer':
+        str = AppLocalizations.of(context)!.composer;
+        break;
+      case 'composerD':
+        str = AppLocalizations.of(context)!.composerD;
+        break;
+      case 'classicalComposer':
+        str = AppLocalizations.of(context)!.classicalComposer;
+        break;
+      case 'classicalComposerD':
+        str = AppLocalizations.of(context)!.classicalComposerD;
+        break;
+      case 'rapSinger':
+        str = AppLocalizations.of(context)!.rapSinger;
+        break;
+      case 'rapSingerD':
+        str = AppLocalizations.of(context)!.rapSingerD;
+        break;
       default:
         break;
     }

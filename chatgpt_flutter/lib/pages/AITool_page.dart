@@ -188,7 +188,6 @@ class _AIToolPageState extends State<AIToolPage>
       toolData.isDelete = false;
       await saveDataToJson();
       setState(() {});
-      _printEachItem();
     }
   }
 

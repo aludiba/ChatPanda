@@ -12,7 +12,6 @@ import 'package:chatgpt_flutter/widget/noData_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 import '../widget/favorite_widget.dart';
@@ -124,7 +123,6 @@ class _WonderfulPageState extends State<WonderfulPage> {
           content: model.content,
           createdAt: model.createdAt ?? 0,
           isFavorite: false);
-      AILogger.log('jsonMap:${messagemodel.toJson()}');
       messageDao.update(messagemodel);
     }
   }

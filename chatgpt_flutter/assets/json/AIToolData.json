@@ -554,6 +554,43 @@
                 }
             }
         ]
+    },
+    {
+        "id": "AI11",
+        "title": "music",
+        "children": [
+            {
+                "id": "AI1100",
+                "descTitle": "composer",
+                "description": "composerD",
+                "conversation": {
+                    "cid": 0,
+                    "stickTime": 0,
+                    "icon": "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2Ff3dfa152-d9c2-423d-9997-b491e72542da%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1715679555&t=2cb992904a45b003716111e12944eecb"
+                }
+            },
+            {
+                "id": "AI1101",
+                "descTitle": "classicalComposer",
+                "description": "classicalComposerD",
+                "conversation": {
+                    "cid": 0,
+                    "stickTime": 0,
+                    "icon": "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2Ff3dfa152-d9c2-423d-9997-b491e72542da%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1715679555&t=2cb992904a45b003716111e12944eecb"
+                }
+            },
+            {
+                "id": "AI1102",
+                "descTitle": "rapSinger",
+                "description": "rapSingerD",
+                "conversation": {
+                    "cid": 0,
+                    "stickTime": 0,
+                    "icon": "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2Ff3dfa152-d9c2-423d-9997-b491e72542da%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1715679555&t=2cb992904a45b003716111e12944eecb"
+                }
+            }
+        ]
     }
 ]
+
 

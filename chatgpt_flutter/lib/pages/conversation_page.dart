@@ -224,7 +224,6 @@ class _ConversationPageState extends State<ConversationPage> {
           accessToken: accessToken,
           prompt: inputMessage) as Map<String, dynamic>;
       if (map['errorCode'] != null) {
-        AILogger.log('accessToken过期errorCode:${map['errorCode']}');
         if (map['errorCode'] == 110) {
           PreferencesHelper.saveData(HiConst.accessToken, '');
           _initWenXinConfig();
@@ -363,13 +362,15 @@ class _ConversationPageState extends State<ConversationPage> {
 
   //设为"精彩"
   void _addFavorite(MessageModel message) async {
+    AILogger.log(
+        '_addFavorite-message:${message.id}-${widget.conversationModel.cid}-${message.ownerName}-${message.createdAt}');
     var result = await favoriteDao.addFavorite(FavoriteModel(
-        id: message.id,
         cid: widget.conversationModel.cid,
         ownerName: message.ownerName,
         createdAt: message.createdAt,
         content: message.content));
     var showText = '';
+    AILogger.log('_addFavorite-result:$result');
     if (result != null && result > 0) {
       message.isFavorite = true;
       messageDao.update(message);
@@ -384,13 +385,15 @@ class _ConversationPageState extends State<ConversationPage> {
 
   //取消"精彩"
   void _removeFavorite(MessageModel message) async {
+    AILogger.log(
+        '_removeFavorite-message:${message.id}-${widget.conversationModel.cid}-${message.ownerName}-${message.createdAt}');
     var result = await favoriteDao.removeFavorite(FavoriteModel(
-        id: message.id,
         cid: widget.conversationModel.cid,
         ownerName: message.ownerName,
         createdAt: message.createdAt,
         content: message.content));
     var showText = '';
+    AILogger.log('_removeFavorite-result:$result');
     if (result != null && result > 0) {
       message.isFavorite = false;
       messageDao.update(message);
