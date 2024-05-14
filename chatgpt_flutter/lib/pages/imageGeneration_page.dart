@@ -5,8 +5,10 @@ import 'package:bubble/bubble.dart';
 import 'package:chat_message/util/wechat_date_format.dart';
 import 'package:chatgpt_flutter/controller/image_controller.dart';
 import 'package:chatgpt_flutter/dao/completion_dao.dart';
+import 'package:chatgpt_flutter/db/favoriteImage_dao.dart';
 import 'package:chatgpt_flutter/db/hi_db_manager.dart';
 import 'package:chatgpt_flutter/db/image_dao.dart';
+import 'package:chatgpt_flutter/model/favorite_model.dart';
 import 'package:chatgpt_flutter/model/imageGeneration_model.dart';
 import 'package:chatgpt_flutter/pages/imageBox_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
@@ -41,6 +43,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
   late String _accessToken;
   late ImageDao _imageDao;
   late CompletionDao _completionDao;
+  late FavoriteImageDao favoriteDao;
   late ImageGenerationController _imageGenerationController;
   final ScrollController _scrollController = ScrollController();
   // 标题
@@ -74,6 +77,8 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
           highlightColor: Colors.transparent, // 高亮颜色透明
           onTap: () {
             setState(() {
+              // 删除所有的收藏图片
+              favoriteDao.deleteAllFavoriteImages();
               // 删除所有数据
               _imageDao.deleteAllImages();
               _imageGenerationController.initialImageList.clear();
@@ -118,6 +123,7 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
     var dbManager =
         await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
     _imageDao = ImageDao(dbManager);
+    favoriteDao = FavoriteImageDao(dbManager);
     var list = await _loadMore();
     _imageGenerationController.loadMoreData(list);
     _completionDao = CompletionDao();
@@ -250,6 +256,12 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
               actionTap: () {
                 ///删除
                 setState(() {
+                  if (imageModel.isFavorite == true) {
+                    favoriteDao.removeFavoriteImage(FavoriteImageModel(
+                        updateAt: imageModel.updateAt,
+                        prompt: imageModel.prompt,
+                        base64: imageModel.base64));
+                  }
                   _imageDao.deleteImage(imageModel.updateAt);
                   _imageGenerationController.initialImageList
                       .remove(imageModel);
@@ -266,7 +278,21 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
                 ImageUtils.shareImage(imageModel, context);
               },
               icon: Icon(Icons.share_outlined, color: color, size: 15),
-              text: AppLocalizations.of(context)!.share)
+              text: AppLocalizations.of(context)!.share),
+          ..._actionItem(
+              isEnable: true,
+              actionTap: () {
+                //收藏
+                if (imageModel.isFavorite == true) {
+                  _removeFavorite(imageModel);
+                } else {
+                  _addFavorite(imageModel);
+                }
+              },
+              icon: Icon(Icons.favorite,
+                  color: imageModel.isFavorite == true ? Colors.red : color,
+                  size: 15),
+              text: AppLocalizations.of(context)!.favorite)
         ],
       ),
     );
@@ -381,5 +407,43 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
   List<Widget>? _appActions() {
     bool result = _dataCount > 0 ? true : false;
     return result ? [_cleanStream] : [];
+  }
+
+  //设为"精彩图片"
+  void _addFavorite(ImageGenerationModel imageModel) async {
+    var result = await favoriteDao.addFavoriteImage(FavoriteImageModel(
+        updateAt: imageModel.updateAt,
+        prompt: imageModel.prompt,
+        base64: imageModel.base64));
+    var showText = '';
+    if (result != null && result > 0) {
+      imageModel.isFavorite = true;
+      _imageDao.update(imageModel);
+      showText = AppLocalizations.of(context)!.successfulCollection;
+    } else {
+      showText = AppLocalizations.of(context)!.collectionFailure;
+    }
+    if (!mounted) return;
+    HiDialog.showSnackBar(context, showText);
+    setState(() {});
+  }
+
+  //取消"精彩图片"
+  void _removeFavorite(ImageGenerationModel imageModel) async {
+    var result = await favoriteDao.removeFavoriteImage(FavoriteImageModel(
+        updateAt: imageModel.updateAt,
+        prompt: imageModel.prompt,
+        base64: imageModel.base64));
+    var showText = '';
+    if (result != null && result > 0) {
+      imageModel.isFavorite = false;
+      _imageDao.update(imageModel);
+      showText = AppLocalizations.of(context)!.unSuccessfulCollection;
+    } else {
+      showText = AppLocalizations.of(context)!.unCollectionFailure;
+    }
+    if (!mounted) return;
+    HiDialog.showSnackBar(context, showText);
+    setState(() {});
   }
 }

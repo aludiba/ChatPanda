@@ -5,10 +5,11 @@ import 'package:sqflite/sqflite.dart';
 
 ///收藏功能数据操作接口
 abstract class IFavorite {
+  // 收藏精彩内容
   Future<int?> addFavorite(FavoriteModel model);
-
+  // 移除精彩内容
   Future<int?> removeFavorite(FavoriteModel model);
-
+  // 获取精彩内容
   Future<List<FavoriteModel>> getFavoriteList();
 }
 
@@ -38,17 +39,17 @@ class FavoriteDao implements IFavorite, ITable {
   }
 
   @override
+  Future<int?> removeFavorite(FavoriteModel model) async {
+    String whereClause = 'createdAt = ${model.createdAt}';
+    var result = await storage.db.delete(tableName, where: whereClause);
+    return result;
+  }
+
+  @override
   Future<List<FavoriteModel>> getFavoriteList() async {
     var results =
         await storage.db.rawQuery('select * from $tableName order by id desc');
     var list = results.map((item) => FavoriteModel.fromJson(item)).toList();
     return list;
-  }
-
-  @override
-  Future<int?> removeFavorite(FavoriteModel model) async {
-    String whereClause = 'createdAt = ${model.createdAt}';
-    var result = await storage.db.delete(tableName, where: whereClause);
-    return result;
   }
 }

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:chat_message/models/message_model.dart';
 import 'package:chatgpt_flutter/util/conversation_context_helper.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
+import 'package:http/http.dart' as http;
 import 'package:openai_flutter/core/ai_completions.dart';
 import 'package:openai_flutter/core/ai_wenxincompletions.dart';
 import 'package:openai_flutter/model/ai_wenxinwstresponse.dart';
@@ -74,6 +77,41 @@ class CompletionDao {
       map = {'errorCode': errorCode};
     }
     return map;
+  }
+
+  ///和文心一言进行会话(流式)
+  void createWenXinStream(
+      {required String accessToken,
+      required String prompt,
+      required Function(String value) onSuccess,
+      required Function? onError,
+      required void Function() onDone}) async {
+    var fullMessages = conversationContextHelper.getWenXinMessage(prompt);
+    AILogger.log('wenxinfullMessages:$fullMessages');
+    var url =
+        'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions?access_token=$accessToken';
+    var headers = {'Content-Type': 'application/json'};
+    var dict = {'messages': fullMessages, 'stream': true};
+    var json = jsonEncode(dict);
+    var request = http.Request('POST', Uri.parse(url))
+      ..headers.addAll(headers)
+      ..body = json; // 添加 JSON 请求体
+    try {
+      var streamedResponse = await request.send();
+      streamedResponse.stream.transform(utf8.decoder).listen(
+            onSuccess,
+            onDone: onDone,
+            onError: onError,
+            cancelOnError: true, // 当发现错误时，取消监听
+          );
+    } catch (e) {
+      AILogger.log('Caught error: $e');
+    }
+  }
+
+  contextHelperAdd(String inputMessage, String streamContent) {
+    conversationContextHelper
+        .add(ConversationModel(inputMessage, streamContent));
   }
 
   ///和文心一言-文生图进行会话

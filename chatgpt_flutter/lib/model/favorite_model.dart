@@ -1,4 +1,4 @@
-///收藏模型
+///收藏内容模型
 class FavoriteModel {
   /// primary key autoincrement
   int? id;
@@ -37,6 +37,40 @@ class FavoriteModel {
     data['ownerName'] = ownerName;
     data['createdAt'] = createdAt;
     data['content'] = content;
+    return data;
+  }
+}
+
+///收藏图片模型
+class FavoriteImageModel {
+  /// primary key autoincrement
+  int? id;
+
+  // 提示词
+  String? prompt;
+
+  ///图片base64
+  String? base64;
+
+  /// 图片的创建时间，单位milliseconds since。
+  int? updateAt;
+
+  FavoriteImageModel({this.id, this.updateAt, this.prompt, this.base64});
+
+  factory FavoriteImageModel.fromJson(Map<String, dynamic> json) =>
+      FavoriteImageModel(
+        id: json['id'],
+        updateAt: json['updateAt'],
+        prompt: json['prompt'],
+        base64: json['base64'],
+      );
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['updateAt'] = updateAt;
+    data['prompt'] = prompt;
+    data['base64'] = base64;
     return data;
   }
 }

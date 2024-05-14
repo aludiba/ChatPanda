@@ -31,10 +31,11 @@ class ImageDao implements IImage, ITable {
   //  prompt	text	提示词
   //  updateAt	integer	创建/更新时间
   //  base64	text	图片的base64字符串
+  //  isFavorite bool 是否收藏
   ImageDao(this.storage) {
     storage.db.execute(
         'create table if not exists $tableName (id integer primary key autoincrement, prompt text,'
-        'updateAt integer, base64 text)');
+        'updateAt integer, base64 text, isFavorite bool)');
   }
 
   @override

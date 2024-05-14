@@ -8,7 +8,11 @@ abstract class IMessage {
 
   Future<int> deleteMessage(int id);
 
+  Future<int> deleteStreamMessage(String streamId);
+
   void update(MessageModel model);
+
+  void updateStream(MessageModel model);
 
   Future<List<MessageModel>> getAllMessage();
 
@@ -29,16 +33,18 @@ class MessageDao implements IMessage, ITable {
 
   //  字段	类型	备注
 //  id	integer	主键、自增
+//  streamId	text	本轮对话的标识id
 //  content	text	消息内容
 //  createdAt	integer	消息创建时间
 //  ownerName	text	发送者昵称
 //  ownerType	text	发送者类型（receiver, sender）
 //  avatar	text	发送者头像
+//  isFavorite bool 是否收藏
   MessageDao(this.storage, {required this.cid})
       : tableName = tableNameByCid(cid) {
     storage.db.execute(
         'create table if not exists $tableName (id integer primary key autoincrement, content text,'
-        'createdAt integer, ownerName text, ownerType text, avatar text, isFavorite bool)');
+        'createdAt integer, streamId text, ownerName text, ownerType text, avatar text, isFavorite bool)');
   }
 
   ///获取带cid的表名称
@@ -49,6 +55,15 @@ class MessageDao implements IMessage, ITable {
   @override
   Future<int> deleteMessage(int id) {
     return storage.db.delete(tableName, where: 'id=$id');
+  }
+
+  @override
+  Future<int> deleteStreamMessage(String streamId) {
+    return storage.db.delete(
+      tableName,
+      where: 'streamId = ?',
+      whereArgs: [streamId],
+    );
   }
 
   @override
@@ -91,6 +106,20 @@ class MessageDao implements IMessage, ITable {
   void update(MessageModel model) {
     String whereClause = 'createdAt = ?';
     List<dynamic> whereArgs = [model.createdAt];
+    Map<String, dynamic> jsonMap = model.toJson();
+
+    /// id有可能为空
+    if (model.id == null) {
+      jsonMap.remove('id');
+    }
+    storage.db
+        .update(tableName, jsonMap, where: whereClause, whereArgs: whereArgs);
+  }
+
+  @override
+  void updateStream(MessageModel model) {
+    String whereClause = 'streamId = ?';
+    List<dynamic> whereArgs = [model.streamId];
     Map<String, dynamic> jsonMap = model.toJson();
 
     /// id有可能为空

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bubble/bubble.dart';
 import 'package:chat_message/core/chat_controller.dart';
 import 'package:chat_message/models/message_model.dart';
@@ -15,6 +17,7 @@ import 'package:chatgpt_flutter/util/aimapping_utils.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:chatgpt_flutter/util/hi_dialog.dart';
 import 'package:chatgpt_flutter/util/hi_selection_area.dart';
+import 'package:chatgpt_flutter/util/hi_utils.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:chatgpt_flutter/widget/message_input_widget.dart';
@@ -72,6 +75,12 @@ class _ConversationPageState extends State<ConversationPage> {
   late FocusNode _focusNode;
   // 标题
   late String _title;
+  // 临时存储流对话id
+  String streamId = '';
+  // 临时存储流对话内容
+  String streamContent = '';
+  // 临时存储流对话模型
+  MessageModel? streamModel;
 
   get _aiRole => Padding(
       padding: const EdgeInsets.only(top: 6, right: 30, bottom: 6, left: 30),
@@ -96,12 +105,11 @@ class _ConversationPageState extends State<ConversationPage> {
 
   get _inputWidget {
     return MessageInputWidget(
-      hint: AppLocalizations.of(context)!.pleaseEnter,
-      enable: _sendBtnEnable,
-      onChanged: (text) => _inputMessage = text,
-      // onSend: () => _onSend(_inputMessage),
-      onSend: () => _onWenXinSend(_inputMessage),
-    );
+        hint: AppLocalizations.of(context)!.pleaseEnter,
+        enable: _sendBtnEnable,
+        onChanged: (text) => _inputMessage = text,
+        // onSend: () => _onSend(_inputMessage),
+        onSend: () => _onWenXinSend(_inputMessage));
   }
 
   get _themeColor => context.watch<ThemeProvider>().themeColor;
@@ -218,31 +226,72 @@ class _ConversationPageState extends State<ConversationPage> {
     setState(() {
       _sendBtnEnable = false;
     });
-    String? response = '';
-    try {
-      var map = await completionDao.createWenXinCompletions(
-          accessToken: accessToken,
-          prompt: inputMessage) as Map<String, dynamic>;
-      if (map['errorCode'] != null) {
-        if (map['errorCode'] == 110) {
-          PreferencesHelper.saveData(HiConst.accessToken, '');
-          _initWenXinConfig();
-          _onWenXinSend(inputMessage);
-          return;
-        }
-      } else {
-        response = map['content'];
-        response = response?.replaceAll("**", "");
-      }
-    } catch (e) {
-      response = 'no response';
-    }
-    response ??= 'no response';
-    _addMessage(
-        _genMessageModel(ownerType: OwnerType.receiver, message: response));
-    setState(() {
-      _sendBtnEnable = true;
-    });
+
+    completionDao.createWenXinStream(
+        accessToken: accessToken,
+        prompt: inputMessage,
+        onSuccess: (String value) {
+          AILogger.log('createWenXinStream:$value');
+          String jsonString = HiUtils.processStreamData(value);
+          AILogger.log('createWenXinStream-处理后:$jsonString');
+          if (jsonString.isNotEmpty) {
+            // 尝试解析JSON字符串
+            try {
+              // 解析JSON
+              final Map<String, dynamic> map =
+                  jsonDecode(jsonString) as Map<String, dynamic>;
+              String? response = '';
+              if (map['errorCode'] != null) {
+                if (map['errorCode'] == 110) {
+                  PreferencesHelper.saveData(HiConst.accessToken, '');
+                  _initWenXinConfig();
+                  _onWenXinSend(inputMessage);
+                  return;
+                }
+              } else {
+                response = map['result'];
+                response = response?.replaceAll("**", "");
+                if (streamId.isEmpty) {
+                  streamId = map['id'];
+                }
+                streamContent = streamContent + response!;
+              }
+              MessageModel tempModel = _genMessageModel(
+                  ownerType: OwnerType.receiver,
+                  streamId: streamId,
+                  message: streamContent);
+              if (streamModel == null) {
+                _addMessage(tempModel);
+              } else {
+                _updateMessage(tempModel!);
+              }
+              streamModel = tempModel;
+              setState(() {});
+            } catch (e) {
+              // 捕获解析错误并抛出详细错误信息
+              AILogger.log('Parsing Error: $e');
+            }
+          }
+        },
+        onDone: () {
+          completionDao.contextHelperAdd(inputMessage, streamContent);
+          streamId = '';
+          streamContent = '';
+          streamModel = null;
+          setState(() {
+            _sendBtnEnable = true;
+          });
+        },
+        onError: (error) {
+          streamId = '';
+          streamContent = '';
+          streamModel = null;
+          // 请求错误的处理
+          AILogger.log('Error: $error');
+          setState(() {
+            _sendBtnEnable = true;
+          });
+        });
   }
 
   ///通知聊天列表页更新当前会话
@@ -264,8 +313,11 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   MessageModel _genMessageModel(
-      {required OwnerType ownerType, required String message}) {
+      {required OwnerType ownerType,
+      String? streamId,
+      required String message}) {
     return MessageModel(
+        streamId: streamId,
         ownerType: ownerType,
         content: message,
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -328,6 +380,18 @@ class _ConversationPageState extends State<ConversationPage> {
     _notifyConversationListUpdate();
   }
 
+  void _updateMessage(MessageModel model) {
+    chatController.deleteMessage(streamModel!);
+    chatController.addMessage(model);
+    messageDao.updateStream(model);
+    _notifyConversationListUpdate();
+  }
+
+  void _removeMessage(MessageModel model) {
+    chatController.deleteMessage(model);
+    messageDao.deleteStreamMessage(model.streamId!);
+  }
+
   int pageIndex = 1;
 
   ///从数据库加载历史聊天记录
@@ -362,15 +426,12 @@ class _ConversationPageState extends State<ConversationPage> {
 
   //设为"精彩"
   void _addFavorite(MessageModel message) async {
-    AILogger.log(
-        '_addFavorite-message:${message.id}-${widget.conversationModel.cid}-${message.ownerName}-${message.createdAt}');
     var result = await favoriteDao.addFavorite(FavoriteModel(
         cid: widget.conversationModel.cid,
         ownerName: message.ownerName,
         createdAt: message.createdAt,
         content: message.content));
     var showText = '';
-    AILogger.log('_addFavorite-result:$result');
     if (result != null && result > 0) {
       message.isFavorite = true;
       messageDao.update(message);
@@ -385,15 +446,12 @@ class _ConversationPageState extends State<ConversationPage> {
 
   //取消"精彩"
   void _removeFavorite(MessageModel message) async {
-    AILogger.log(
-        '_removeFavorite-message:${message.id}-${widget.conversationModel.cid}-${message.ownerName}-${message.createdAt}');
     var result = await favoriteDao.removeFavorite(FavoriteModel(
         cid: widget.conversationModel.cid,
         ownerName: message.ownerName,
         createdAt: message.createdAt,
         content: message.content));
     var showText = '';
-    AILogger.log('_removeFavorite-result:$result');
     if (result != null && result > 0) {
       message.isFavorite = false;
       messageDao.update(message);

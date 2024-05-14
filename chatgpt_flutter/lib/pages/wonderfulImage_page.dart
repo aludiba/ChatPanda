@@ -1,39 +1,42 @@
-import 'package:chat_message/models/message_model.dart';
-import 'package:chatgpt_flutter/db/favorite_dao.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:chatgpt_flutter/db/favoriteImage_dao.dart';
 import 'package:chatgpt_flutter/db/hi_db_manager.dart';
-import 'package:chatgpt_flutter/db/message_dao.dart';
+import 'package:chatgpt_flutter/db/image_dao.dart';
 import 'package:chatgpt_flutter/model/favorite_model.dart';
-import 'package:chatgpt_flutter/pages/message_detail.dart';
+import 'package:chatgpt_flutter/model/imageGeneration_model.dart';
+import 'package:chatgpt_flutter/pages/imageBox_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/hi_dialog.dart';
-import 'package:chatgpt_flutter/util/navigator_util.dart';
+import 'package:chatgpt_flutter/widget/favoriteImge_widget.dart';
 import 'package:chatgpt_flutter/widget/noData_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
-import '../widget/favorite_widget.dart';
-
 ///收藏的消息页面
-class WonderfulPage extends StatefulWidget {
-  const WonderfulPage({Key? key}) : super(key: key);
+class WonderfulImagePage extends StatefulWidget {
+  const WonderfulImagePage({Key? key}) : super(key: key);
 
   @override
-  State<WonderfulPage> createState() => _WonderfulPageState();
+  State<WonderfulImagePage> createState() => _WonderfulImagePageState();
 }
 
-class _WonderfulPageState extends State<WonderfulPage> {
-  late FavoriteDao favoriteDao;
+class _WonderfulImagePageState extends State<WonderfulImagePage> {
+  late FavoriteImageDao favoriteImageDao;
 
-  List<FavoriteModel> favoriteList = [];
+  List<FavoriteImageModel> favoriteList = [];
 
   get _themeColor => context.watch<ThemeProvider>().themeColor;
 
   get _listView => ListView.builder(
       itemCount: favoriteList.length,
       itemBuilder: (BuildContext context, int index) {
-        FavoriteModel model = favoriteList[index];
+        FavoriteImageModel model = favoriteList[index];
         return Slidable(
             endActionPane: ActionPane(
                 motion: const ScrollMotion(),
@@ -50,7 +53,7 @@ class _WonderfulPageState extends State<WonderfulPage> {
                     backgroundColor: _themeColor,
                   ),
                 ]),
-            child: FavoriteWidget(
+            child: FavoriteImageWidget(
               model: model,
               onTap: _jumpToDetail,
             ));
@@ -66,7 +69,7 @@ class _WonderfulPageState extends State<WonderfulPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.wonderfulContent),
+        title: Text(AppLocalizations.of(context)!.wonderfulImage),
       ),
       body: _subViews(),
     );
@@ -75,37 +78,36 @@ class _WonderfulPageState extends State<WonderfulPage> {
   void _doInit() async {
     var dbManager =
         await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
-    favoriteDao = FavoriteDao(dbManager);
+    favoriteImageDao = FavoriteImageDao(dbManager);
     _loadData();
   }
 
   void _loadData() async {
-    var list = await favoriteDao.getFavoriteList();
+    List<FavoriteImageModel> list = await favoriteImageDao.getFavoriteImages();
     setState(() {
       favoriteList = list;
     });
   }
 
   ///取消"精彩"设置
-  _onCancelWonderFul(FavoriteModel model) async {
+  _onCancelWonderFul(FavoriteImageModel model) async {
     ///将会话中的该条数据取消"精彩"设置
-    if (model.cid != null) {
+    if (model.updateAt != null) {
       var dbManager =
           await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
-      MessageDao messageDao = MessageDao(dbManager, cid: model.cid!);
-      MessageModel messagemodel = MessageModel(
-          ownerType: OwnerType.receiver,
-          ownerName: model.ownerName,
-          content: model.content,
-          createdAt: model.createdAt ?? 0,
+      ImageDao imageDao = ImageDao(dbManager);
+      ImageGenerationModel imageModel = ImageGenerationModel(
+          prompt: model.prompt,
+          base64: model.base64,
+          updateAt: model.updateAt ?? 0,
           isFavorite: false);
-      messageDao.update(messagemodel);
+      imageDao.update(imageModel);
     }
   }
 
-  _onDelete(FavoriteModel model) async {
+  _onDelete(FavoriteImageModel model) async {
     //从"精彩"列表中移除
-    var result = await favoriteDao.removeFavorite(model);
+    var result = await favoriteImageDao.removeFavoriteImage(model);
     var showText = '';
     if (result != null && result > 0) {
       _onCancelWonderFul(model);
@@ -120,8 +122,32 @@ class _WonderfulPageState extends State<WonderfulPage> {
     });
   }
 
-  void _jumpToDetail(FavoriteModel model, BuildContext ancestor) {
-    NavigatorUtil.push(context, MessageDetailPage(model: model));
+  // 跳转详情
+  void _jumpToDetail(FavoriteImageModel model, BuildContext ancestor) {
+    ImageGenerationModel imageModel = ImageGenerationModel(
+        prompt: model.prompt,
+        base64: model.base64,
+        updateAt: model.updateAt ?? 0,
+        isFavorite: true);
+    String base64Str = imageModel.base64 ?? '';
+    try {
+      Uint8List bytes = base64Decode(base64Str);
+      Widget imageWidget = Image.memory(bytes);
+      // 模态展示图片
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            // 使用Container包裹，设置背景颜色
+            color: Colors.white,
+            child:
+                ImageBoxPage(imageModel: imageModel, imageWidget: imageWidget),
+          );
+        },
+      );
+    } catch (e) {
+      AILogger.log('Error decoding base64 image: $e');
+    }
   }
 
   _subViews() {

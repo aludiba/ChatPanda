@@ -46,7 +46,7 @@ class HiDBManager {
 
   ///账号唯一标识
   static String getAccountHash() {
-    ///TODO:以后根据其它方式标识
+    ///TODO:账号标识------以后根据其它方式标识
     // return LoginDao.getAccountHash() ?? 'test';
     return 'test';
   }
