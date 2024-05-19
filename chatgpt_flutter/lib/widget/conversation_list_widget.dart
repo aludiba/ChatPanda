@@ -142,8 +142,8 @@ class ConversationListWidgetState extends State<ConversationListWidget>
   }
 
   void _doInit() async {
-    var storage =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var storage = await HiDBManager.instance(dbName: account);
     conversationListDao = ConversationListDao(
         storage,
         widget.isComprehensive == true
@@ -275,9 +275,10 @@ class ConversationListWidgetState extends State<ConversationListWidget>
   bool get wantKeepAlive => true;
 
   _onDelete(ConversationModel model) async {
+    var account = await HiDBManager.getAccountHash();
+
     /// 如果有设为"精彩"的内容则取消设置
-    var storage =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var storage = await HiDBManager.instance(dbName: account);
     currentMessageDao = MessageDao(storage, cid: model.cid);
     currentMessageDao.getAllMessage().then((value) {
       for (var messageModel in value) {

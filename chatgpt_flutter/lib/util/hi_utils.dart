@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -41,5 +43,10 @@ class HiUtils {
       AILogger.log('No valid JSON data found.');
       return '';
     }
+  }
+
+  // 判断当前设备是否是iOS设备
+  static bool isIOS() {
+    return Platform.isIOS;
   }
 }

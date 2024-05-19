@@ -8,11 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_hi_cache/flutter_hi_cache.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_pangle_ads/flutter_pangle_ads.dart';
 import 'package:flutter_splash_screen/flutter_splash_screen.dart';
 import 'package:openai_flutter/http/ai_config.dart';
 import 'package:provider/provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // FlutterGromoreAds.initAd('5543205');
+  FlutterPangleAds.initAd('5543205');
   runApp(const MyApp());
 }
 
@@ -69,7 +73,8 @@ class MyApp extends StatelessWidget {
   }
 
   Future<void> doInit() async {
-    hideScreen();
+    // _initGromoreAds();
+    _hideScreen();
     await HiCache.preInit();
     HiAPICache.init(HiCache.getInstance());
     //获取之前设置过的open ai apikey
@@ -78,9 +83,15 @@ class MyApp extends StatelessWidget {
   }
 
   ///hide your splash screen
-  Future<void> hideScreen() async {
+  Future<void> _hideScreen() async {
     Future.delayed(const Duration(milliseconds: 1800), () {
       FlutterSplashScreen.hide();
     });
   }
+
+  //初始化GromoreAds
+  // _initGromoreAds() {
+  //   // bool result = FlutterGromoreAds.requestIDFA;
+  //   FlutterGromoreAds.initAd('5543205');
+  // }
 }

@@ -364,8 +364,8 @@ class _ConversationPageState extends State<ConversationPage> {
         _loadMore(loadMore: true);
       }
     });
-    var dbManager =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var dbManager = await HiDBManager.instance(dbName: account);
     messageDao = MessageDao(dbManager, cid: widget.conversationModel.cid);
     favoriteDao = FavoriteDao(dbManager);
     var list = await _loadMore();

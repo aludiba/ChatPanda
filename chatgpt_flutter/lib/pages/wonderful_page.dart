@@ -73,8 +73,8 @@ class _WonderfulPageState extends State<WonderfulPage> {
   }
 
   void _doInit() async {
-    var dbManager =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var dbManager = await HiDBManager.instance(dbName: account);
     favoriteDao = FavoriteDao(dbManager);
     _loadData();
   }
@@ -90,8 +90,8 @@ class _WonderfulPageState extends State<WonderfulPage> {
   _onCancelWonderFul(FavoriteModel model) async {
     ///将会话中的该条数据取消"精彩"设置
     if (model.cid != null) {
-      var dbManager =
-          await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+      var account = await HiDBManager.getAccountHash();
+      var dbManager = await HiDBManager.instance(dbName: account);
       MessageDao messageDao = MessageDao(dbManager, cid: model.cid!);
       MessageModel messagemodel = MessageModel(
           ownerType: OwnerType.receiver,

@@ -52,8 +52,8 @@ class _ComprehensivePageState extends State<ComprehensivePage> {
   }
 
   void _doInit() async {
-    var storage =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var storage = await HiDBManager.instance(dbName: account);
     conversationListDao =
         ConversationListDao(storage, HiConst.aIToolChatListName);
     conversationListCount =

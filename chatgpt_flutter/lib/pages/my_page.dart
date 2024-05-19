@@ -3,6 +3,7 @@ import 'package:chatgpt_flutter/pages/wonderful_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
+import 'package:chatgpt_flutter/widget/account_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,6 @@ class _MyPageState extends State<MyPage> {
     return Scaffold(
       body: Column(
         children: [
-          60.paddingHeight,
           // ..._itemWidget(
           //     color: color,
           //     title: AppLocalizations.of(context)!.setOpenAIAPIKey,
@@ -53,6 +53,7 @@ class _MyPageState extends State<MyPage> {
           //     title: AppLocalizations.of(context)!.help,
           //     icon: Icons.arrow_forward_ios,
           //     onTap: _jumpToHelper),
+          const AccountWidget(),
           ..._itemWidget(
               color: color,
               title: AppLocalizations.of(context)!.wonderfulContent,

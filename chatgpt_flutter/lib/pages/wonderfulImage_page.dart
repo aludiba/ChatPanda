@@ -76,8 +76,8 @@ class _WonderfulImagePageState extends State<WonderfulImagePage> {
   }
 
   void _doInit() async {
-    var dbManager =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var dbManager = await HiDBManager.instance(dbName: account);
     favoriteImageDao = FavoriteImageDao(dbManager);
     _loadData();
   }
@@ -93,8 +93,8 @@ class _WonderfulImagePageState extends State<WonderfulImagePage> {
   _onCancelWonderFul(FavoriteImageModel model) async {
     ///将会话中的该条数据取消"精彩"设置
     if (model.updateAt != null) {
-      var dbManager =
-          await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+      var account = await HiDBManager.getAccountHash();
+      var dbManager = await HiDBManager.instance(dbName: account);
       ImageDao imageDao = ImageDao(dbManager);
       ImageGenerationModel imageModel = ImageGenerationModel(
           prompt: model.prompt,

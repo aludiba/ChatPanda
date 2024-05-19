@@ -120,8 +120,8 @@ class _ImageGenerationPageState extends State<ImageGenerationPage> {
         _loadMore(loadMore: true);
       }
     });
-    var dbManager =
-        await HiDBManager.instance(dbName: HiDBManager.getAccountHash());
+    var account = await HiDBManager.getAccountHash();
+    var dbManager = await HiDBManager.instance(dbName: account);
     _imageDao = ImageDao(dbManager);
     favoriteDao = FavoriteImageDao(dbManager);
     var list = await _loadMore();

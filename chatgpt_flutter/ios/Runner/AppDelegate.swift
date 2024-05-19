@@ -1,6 +1,8 @@
 import UIKit
 import Flutter
 import CloudKit
+import AdSupport
+import AppTrackingTransparency
 
 private let channelName = "chatPanda/icloud"
 
@@ -21,6 +23,7 @@ private let channelName = "chatPanda/icloud"
       }
     })
     GeneratedPluginRegistrant.register(with: self)
+    self.requestIDFA()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -36,4 +39,22 @@ private let channelName = "chatPanda/icloud"
           }
       }
   }
+    private func requestIDFA() {
+      if #available(iOS 14, *) {
+        ATTrackingManager.requestTrackingAuthorization { status in
+          switch status {
+          case .authorized:
+            let idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+              print("idfa:\(idfa)")
+          case .denied, .restricted, .notDetermined:
+              print("Tracking authorization denied or not determined")
+          @unknown default:
+              print("Unknown status")
+          }
+        }
+      } else {
+        let idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+          print("idfa1:\(idfa)")
+      }
+    }
 }

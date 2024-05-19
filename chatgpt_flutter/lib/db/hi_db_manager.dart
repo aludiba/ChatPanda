@@ -1,3 +1,6 @@
+import 'package:chatgpt_flutter/util/hi_const.dart';
+import 'package:chatgpt_flutter/util/hi_utils.dart';
+import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:flutter/cupertino.dart';
 // import 'package:login_sdk/dao/login_dao.dart';
 import 'package:sqflite/sqflite.dart';
@@ -45,9 +48,17 @@ class HiDBManager {
   }
 
   ///账号唯一标识
-  static String getAccountHash() {
-    ///TODO:账号标识------以后根据其它方式标识
-    // return LoginDao.getAccountHash() ?? 'test';
-    return 'test';
+  static Future<String> getAccountHash() async {
+    String accountStr = '';
+    if (HiUtils.isIOS()) {
+      ///使用iCloud账号标识
+      accountStr = await PreferencesHelper.loadData(HiConst.iCloudUserID) ?? '';
+    }
+    if (accountStr.isEmpty) {
+      accountStr = 'test';
+      // accountStr = 'test1';
+    }
+    // AILogger.log('accountStr:$accountStr');
+    return accountStr;
   }
 }
