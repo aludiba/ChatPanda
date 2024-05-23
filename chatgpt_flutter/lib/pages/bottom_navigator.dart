@@ -34,9 +34,11 @@ class _BottomNavigatorState extends State<BottomNavigator> {
   @override
   void initState() {
     super.initState();
+    // 如果是首次进入则初始化配置及添加开屏广告
     _doInit();
     AILogger.log('bottom-initState');
-    _loadSplashAd();
+    _loadSplashPangleAds();
+    // _loadSplashGromorAds();
   }
 
   _doInit() async {
@@ -64,8 +66,9 @@ class _BottomNavigatorState extends State<BottomNavigator> {
     }
   }
 
-  void _loadSplashAd() {
-    FlutterPangleAds.showSplashAd('889279359', timeout: 3);
+  // 穿山甲开屏广告
+  void _loadSplashPangleAds() {
+    FlutterPangleAds.showSplashAd('889279359', timeout: 2);
     FlutterPangleAds.onEventListener((event) {
       // 普通广告事件
       String adEvent =
@@ -80,19 +83,23 @@ class _BottomNavigatorState extends State<BottomNavigator> {
       }
       AILogger.log('onEventListener:$adEvent');
     });
-    // // 设置广告监听
-    // FlutterGromoreAds.onEventListener((event) {
-    //   AILogger.log('onEventListener adId:${event.adId} action:${event.action}');
-    //   if (event is AdErrorEvent) {
-    //     AILogger.log(
-    //         'AdErrorEvent-errCode:${event.errCode}, errMsg:${event.errMsg}');
-    //   } else if (event is AdRewardEvent) {
-    //     // 获得广告激励事件
-    //   }
-    // });
-    // FlutterGromoreAds.showSplashAd('889279359', // 替换为你的开屏广告 ID
-    //     timeout: 4.5);
   }
+
+  // 穿山甲聚合开屏广告
+  // void _loadSplashGromorAds() {
+  //   FlutterGromoreAds.showSplashAd('889279687', // 替换为你的开屏广告 ID
+  //       timeout: 2.0);
+  //   // 设置广告监听
+  //   FlutterGromoreAds.onEventListener((event) {
+  //     AILogger.log('onEventListener adId:${event.adId} action:${event.action}');
+  //     if (event is AdErrorEvent) {
+  //       AILogger.log(
+  //           'AdErrorEvent-errCode:${event.errCode}, errMsg:${event.errMsg}');
+  //     } else if (event is AdRewardEvent) {
+  //       // 获得广告激励事件
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

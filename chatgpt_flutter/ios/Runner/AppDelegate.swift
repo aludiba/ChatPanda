@@ -31,6 +31,7 @@ private let channelName = "chatPanda/icloud"
       let container = CKContainer.default()
       container.fetchUserRecordID { (recordID, error) in
           if let userID = recordID, error == nil {
+              print("ICloudUserID:\(userID),recordName:\(userID.recordName)")
               result(userID.recordName)
           } else {
               result(FlutterError(code: "UNAVAILABLE",

@@ -1,22 +1,30 @@
-import 'package:chatgpt_flutter/dao/hi_api_cache.dart';
 import 'package:chatgpt_flutter/pages/bottom_navigator.dart';
 import 'package:chatgpt_flutter/provider/hi_provider.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/custom_Notification.dart';
-import 'package:chatgpt_flutter/util/hi_const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_hi_cache/flutter_hi_cache.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_pangle_ads/flutter_pangle_ads.dart';
 import 'package:flutter_splash_screen/flutter_splash_screen.dart';
-import 'package:openai_flutter/http/ai_config.dart';
 import 'package:provider/provider.dart';
+
+//初始化穿山甲SDK
+_initPangleAds() {
+  Future<bool> result = FlutterPangleAds.requestIDFA;
+  FlutterPangleAds.initAd('5543205');
+}
+
+//初始化GromoreAds
+// _initGromoreAds() {
+//   Future<bool> result = FlutterGromoreAds.requestIDFA;
+//   FlutterGromoreAds.initAd('5543205');
+// }
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // FlutterGromoreAds.initAd('5543205');
-  FlutterPangleAds.initAd('5543205');
+  _initPangleAds();
+  // _initGromoreAds();
   runApp(const MyApp());
 }
 
@@ -34,52 +42,31 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: doInit(),
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        Widget widget;
-        if (snapshot.connectionState == ConnectionState.done) {
-          widget = const BottomNavigator();
-        } else {
-          return _loadingPage;
-        }
-        return MultiProvider(
-          providers: mainProviders,
-          child: Consumer<ThemeProvider>(builder: (BuildContext context,
-              ThemeProvider themeProvider, Widget? child) {
-            return ChangeNotifierProvider(
-              create: (context) => AIToolSharedData(),
-              child: MaterialApp(
-                debugShowCheckedModeBanner: false,
-                home: widget,
-                theme: themeProvider.getTheme(),
-                title: 'ChatGPT',
-                localizationsDelegates: const [
-                  AppLocalizations.delegate, // Add this line
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate
-                ],
-                supportedLocales: const [
-                  Locale('zh'), // 简体中文
-                  Locale('en'), // English
-                ],
-              ),
-            );
-          }),
+    return MultiProvider(
+      providers: mainProviders,
+      child: Consumer<ThemeProvider>(builder:
+          (BuildContext context, ThemeProvider themeProvider, Widget? child) {
+        return ChangeNotifierProvider(
+          create: (context) => AIToolSharedData(),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: const BottomNavigator(),
+            theme: themeProvider.getTheme(),
+            title: 'ChatGPT',
+            localizationsDelegates: const [
+              AppLocalizations.delegate, // Add this line
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate
+            ],
+            supportedLocales: const [
+              Locale('zh'), // 简体中文
+              Locale('en'), // English
+            ],
+          ),
         );
-      },
+      }),
     );
-  }
-
-  Future<void> doInit() async {
-    // _initGromoreAds();
-    _hideScreen();
-    await HiCache.preInit();
-    HiAPICache.init(HiCache.getInstance());
-    //获取之前设置过的open ai apikey
-    String? cacheKey = HiCache.getInstance().get(HiConst.keyOpenAi);
-    AIConfigBuilder.init(cacheKey ?? '');
   }
 
   ///hide your splash screen
@@ -88,10 +75,4 @@ class MyApp extends StatelessWidget {
       FlutterSplashScreen.hide();
     });
   }
-
-  //初始化GromoreAds
-  // _initGromoreAds() {
-  //   // bool result = FlutterGromoreAds.requestIDFA;
-  //   FlutterGromoreAds.initAd('5543205');
-  // }
 }

@@ -44,6 +44,7 @@ class _AIToolPageState extends State<AIToolPage>
   late ConversationListDao conversationListDao;
   //跳转到对话详情待更新的model
   ConversationModel? pendingModel;
+  get _themeProvider => context.watch<ThemeProvider>();
 
   @override
   void initState() {
