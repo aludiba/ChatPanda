@@ -1,10 +1,12 @@
+import 'package:chatgpt_flutter/pages/Cloud_page.dart';
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
 import 'package:chatgpt_flutter/util/hi_const.dart';
+import 'package:chatgpt_flutter/util/hi_utils.dart';
+import 'package:chatgpt_flutter/util/navigator_util.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
 import 'package:chatgpt_flutter/util/preferences_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:openai_flutter/utils/ai_logger.dart';
 import 'package:provider/provider.dart';
 
 class AccountWidget extends StatefulWidget {
@@ -39,8 +41,6 @@ class _AccountWidgetState extends State<AccountWidget> {
     );
   }
 
-  ///账户信息展示
-  ///账户信息展示
   _accountCard() {
     return FutureBuilder<String>(
       future: _loadAccount(),
@@ -65,7 +65,6 @@ class _AccountWidgetState extends State<AccountWidget> {
     );
   }
 
-  ///账户信息展示
   _subscribeCard() {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10),
@@ -78,7 +77,16 @@ class _AccountWidgetState extends State<AccountWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // 设置主轴对齐方式
         children: [
-          Icon(Icons.cloud, color: _themeColor),
+          Row(
+            children: [
+              Icon(Icons.cloud, color: _themeColor),
+              10.paddingWidth,
+              Text(
+                AppLocalizations.of(context)!.subscribeNow,
+                style: const TextStyle(fontSize: 16),
+              )
+            ],
+          ),
           Container(
             height: 30,
             decoration: BoxDecoration(
@@ -87,8 +95,10 @@ class _AccountWidgetState extends State<AccountWidget> {
             ),
             child: InkWell(
               onTap: () {
-                //TODO:跳转订阅页面
-                AILogger.log('跳转订阅页面~~~');
+                if (HiUtils.isIOS()) {
+                  //跳转Cloud页面
+                  NavigatorUtil.push(context, const CloudPage());
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.only(left: 4, right: 4),
@@ -96,7 +106,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   // 使用 Center 使文本在容器中居中
                   child: Text(
                     AppLocalizations.of(context)!.subscribe,
-                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),

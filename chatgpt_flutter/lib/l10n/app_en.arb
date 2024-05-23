@@ -197,5 +197,18 @@
   "shareImageTips": "Images from ChatPanda",
   "shareImageError": "Error in sharing pictures",
   "done": "Done",
-  "subscribe": "Subscribe"
+  "subscribe": "Sub.",
+  "subscribeNow": "Subscribe to own your privileges.",
+  "cloudPlan": "Manage Cloud Plan",
+  "cloudID": "ID",
+  "pointPurchaseTitle": "Buy two million panda beans",
+  "pointPurchaseSub": "Valid for two months",
+  "selectPlanning": "Please select your plan",
+  "monthlySubscription": "Mo. Sub.",
+  "annualSubscription": "Ann. Sub.",
+  "pandaBeanTip": "The average monthly ownership of one million panda beans.",
+  "cloudSubscription": "Cloud Subscription",
+  "intelligentQuestion": "Intelligent Question Answering",
+  "writing": "Writing",
+  "drawing": "Drawing"
 }

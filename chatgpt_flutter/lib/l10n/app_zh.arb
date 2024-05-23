@@ -198,5 +198,18 @@
   "shareImageTips": "来自ChatPanda的图片",
   "shareImageError": "分享图片出错",
   "done": "完成",
-  "subscribe": "订阅"
+  "subscribe": "订阅",
+  "subscribeNow": "立即订阅专享特权",
+  "cloudPlan": "管理云计划",
+  "cloudID": "ID",
+  "pointPurchaseTitle": "购买两百万熊猫豆",
+  "pointPurchaseSub": "两个月内有效",
+  "selectPlanning": "请选择您的计划",
+  "monthlySubscription": "月度订阅",
+  "annualSubscription": "年度订阅",
+  "pandaBeanTip": "平均每月一百万熊猫豆",
+  "cloudSubscription": "云端订阅",
+  "intelligentQuestion": "智能问答",
+  "writing": "写作",
+  "drawing": "绘画"
 }
