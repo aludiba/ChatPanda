@@ -13,6 +13,7 @@ class InAppPurchaseHelper {
   void _initialize() async {
     final bool available = await _iap.isAvailable();
     if (available) {
+      //TODO:产品ID后面将写入真实的
       const Set<String> _kIds = {'product_id1', 'product_id2'};
       final ProductDetailsResponse response =
           await _iap.queryProductDetails(_kIds);
