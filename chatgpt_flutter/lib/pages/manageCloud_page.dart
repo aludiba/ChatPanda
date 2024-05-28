@@ -1,4 +1,5 @@
 import 'package:chatgpt_flutter/provider/theme_provider.dart';
+import 'package:chatgpt_flutter/util/InAppPurchase_Helper.dart';
 import 'package:chatgpt_flutter/util/padding_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -12,7 +13,16 @@ class ManageCloudPlanPage extends StatefulWidget {
 }
 
 class _ManageCloudPlanPageState extends State<ManageCloudPlanPage> {
+  // 内购助手对象
+  final InAppPurchaseHelper _iapHelper = InAppPurchaseHelper();
+
   get _themeColor => context.watch<ThemeProvider>().themeColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _iapHelper.listenToPurchaseUpdated();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +59,7 @@ class _ManageCloudPlanPageState extends State<ManageCloudPlanPage> {
 
   // 订阅计划
   _planItem() {
+    // TODO:根据返回的内购商品列表展示
     return Column(
       children: [
         30.paddingHeight,
