@@ -55,6 +55,13 @@ class _CloudPageState extends State<CloudPage> {
                       subTitle: 'test:20250124998',
                       icon: Icons.perm_device_info,
                       isSkip: false,
+                      isLast: false),
+                  ..._itemWidget(
+                      color: _themeColor,
+                      title: AppLocalizations.of(context)!.pandaBean,
+                      subTitle: '2,000,000/2,000,000',
+                      icon: Icons.money,
+                      isSkip: false,
                       isLast: true)
                 ],
               ),

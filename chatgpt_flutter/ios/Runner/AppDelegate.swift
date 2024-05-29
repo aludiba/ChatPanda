@@ -3,6 +3,7 @@ import Flutter
 import CloudKit
 import AdSupport
 import AppTrackingTransparency
+import iCloudStoragePlugin
 
 private let channelName = "chatPanda/icloud"
 
@@ -24,6 +25,8 @@ private let channelName = "chatPanda/icloud"
     })
     GeneratedPluginRegistrant.register(with: self)
     self.requestIDFA()
+    GeneratedPluginRegistrant.register(with: self)
+    SwiftICloudStoragePlugin.register(with: self.registrar(forPlugin: "ICloudStoragePlugin"))
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
